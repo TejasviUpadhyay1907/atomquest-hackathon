@@ -113,16 +113,26 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token"""
     try:
+        print(f"🔐 Login attempt for: {credentials.email}")
+        
         # Find user
         user = db.query(User).filter(User.email == credentials.email).first()
         
         if not user:
+            print(f"❌ User not found: {credentials.email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
             )
         
-        if not verify_password(credentials.password, user.password_hash):
+        print(f"✓ User found: {user.full_name}, Role: {user.role}")
+        
+        # Verify password
+        password_valid = verify_password(credentials.password, user.password_hash)
+        print(f"✓ Password verification: {password_valid}")
+        
+        if not password_valid:
+            print(f"❌ Invalid password for: {credentials.email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
@@ -130,30 +140,50 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         
         # Create access token - IMPORTANT: sub must be a string
         access_token = create_access_token(data={"sub": str(user.id)})
+        print(f"✓ Token created for user ID: {user.id}")
+        
+        # Serialize role safely
+        try:
+            role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
+        except Exception as role_error:
+            print(f"⚠️ Role serialization issue: {role_error}, using fallback")
+            role_str = "Employee"  # Fallback
+        
+        print(f"✓ Role serialized: {role_str}")
         
         # Return simple response
-        return {
+        response_data = {
             "access_token": access_token,
             "token_type": "bearer",
             "user": {
                 "id": user.id,
                 "email": user.email,
                 "full_name": user.full_name,
-                "role": str(user.role.value) if hasattr(user.role, 'value') else str(user.role),
+                "role": role_str,
                 "department": user.department,
                 "manager_id": user.manager_id
             }
         }
+        
+        print(f"✅ Login successful for: {credentials.email}")
+        return response_data
+        
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Login error: {e}")
+        print(f"❌ Login error: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Login failed: {str(e)}"
         )
+
+
+@router.options("/login")
+def login_options():
+    """Handle CORS preflight for login"""
+    return {"message": "OK"}
 
 
 @router.get("/me", response_model=UserResponse)
