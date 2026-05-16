@@ -3,12 +3,21 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from .config import settings
 
-# Create database engine
+# Create database engine with IPv4 connection args
+connect_args = {}
+if "supabase.co" in settings.DATABASE_URL:
+    # Force IPv4 for Supabase connections on Render
+    connect_args = {
+        "options": "-c search_path=public",
+        "connect_timeout": 10,
+    }
+
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
     pool_size=10,
-    max_overflow=20
+    max_overflow=20,
+    connect_args=connect_args
 )
 
 # Create session factory

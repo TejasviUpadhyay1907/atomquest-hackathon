@@ -38,36 +38,66 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/fix-demo-passwords")
 def fix_demo_passwords(db: Session = Depends(get_db)):
-    """Fix passwords for existing demo users"""
+    """Fix passwords for existing demo users and create if missing"""
     try:
+        from app.models.user import UserRole
         fixed_users = []
+        created_users = []
         
-        # Update admin password and role
-        admin = db.query(User).filter(User.email == "admin@demo.com").first()
-        if admin:
-            admin.password_hash = "$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW"
-            admin.role = "Admin"
-            fixed_users.append("admin@demo.com")
+        # Valid bcrypt hash for "password123"
+        VALID_HASH = "$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW"
         
-        # Update manager password and role
-        manager = db.query(User).filter(User.email == "manager@demo.com").first()
-        if manager:
-            manager.password_hash = "$2b$12$lDwzzrkRkTXZCkSMRHJEjeLVdjvhXxddCIN8rGinBGaXElTNxDKDi"
-            manager.role = "Manager"
-            fixed_users.append("manager@demo.com")
+        # Demo users configuration
+        demo_users = [
+            {
+                "email": "admin@demo.com",
+                "full_name": "Admin User",
+                "role": UserRole.ADMIN,
+                "department": "Administration"
+            },
+            {
+                "email": "manager@demo.com",
+                "full_name": "Manager User",
+                "role": UserRole.MANAGER,
+                "department": "Engineering"
+            },
+            {
+                "email": "emp1@demo.com",
+                "full_name": "Employee One",
+                "role": UserRole.EMPLOYEE,
+                "department": "Engineering"
+            }
+        ]
         
-        # Update employee password and role
-        employee = db.query(User).filter(User.email == "emp1@demo.com").first()
-        if employee:
-            employee.password_hash = "$2b$12$cC/kJp64mAy/fBULwuZNouvl5DBIVScge2fCuwrjgLzhArwAqeVDu"
-            employee.role = "Employee"
-            fixed_users.append("emp1@demo.com")
+        for user_data in demo_users:
+            email = user_data["email"]
+            user = db.query(User).filter(User.email == email).first()
+            
+            if user:
+                # Update existing user
+                user.password_hash = VALID_HASH
+                user.role = user_data["role"]
+                user.full_name = user_data["full_name"]
+                user.department = user_data["department"]
+                fixed_users.append(email)
+            else:
+                # Create new user
+                user = User(
+                    email=email,
+                    password_hash=VALID_HASH,
+                    full_name=user_data["full_name"],
+                    role=user_data["role"],
+                    department=user_data["department"]
+                )
+                db.add(user)
+                created_users.append(email)
         
         db.commit()
         
         return {
-            "message": "Demo user passwords fixed successfully",
-            "users": fixed_users,
+            "message": "Demo users fixed/created successfully",
+            "fixed": fixed_users,
+            "created": created_users,
             "credentials": {
                 "admin": "admin@demo.com / password123",
                 "manager": "manager@demo.com / password123",
