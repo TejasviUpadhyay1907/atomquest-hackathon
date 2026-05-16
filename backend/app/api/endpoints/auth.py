@@ -101,6 +101,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         # Create access token - IMPORTANT: sub must be a string
         access_token = create_access_token(data={"sub": str(user.id)})
         
+        # Return simple response
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -108,7 +109,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
                 "id": user.id,
                 "email": user.email,
                 "full_name": user.full_name,
-                "role": user.role,
+                "role": str(user.role.value) if hasattr(user.role, 'value') else str(user.role),
                 "department": user.department,
                 "manager_id": user.manager_id
             }
@@ -117,6 +118,8 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         print(f"Login error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Login failed: {str(e)}"
