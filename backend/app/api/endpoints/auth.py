@@ -36,74 +36,35 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/create-demo-users")
-def create_demo_users(db: Session = Depends(get_db)):
-    """Create all 3 demo users: admin, manager, employee"""
+@router.post("/fix-demo-passwords")
+def fix_demo_passwords(db: Session = Depends(get_db)):
+    """Fix passwords for existing demo users"""
     try:
-        from app.models.goal import Goal
-        from app.models.check_in import CheckIn
+        fixed_users = []
         
-        created_users = []
+        # Update admin password
+        admin = db.query(User).filter(User.email == "admin@demo.com").first()
+        if admin:
+            admin.password_hash = "$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW"
+            fixed_users.append("admin@demo.com")
         
-        # Delete existing demo users and their data
-        for email in ["admin@demo.com", "manager@demo.com", "emp1@demo.com"]:
-            existing = db.query(User).filter(User.email == email).first()
-            if existing:
-                # Get all goals for this user
-                user_goals = db.query(Goal).filter(Goal.user_id == existing.id).all()
-                goal_ids = [g.id for g in user_goals]
-                
-                # Delete check-ins for these goals
-                if goal_ids:
-                    db.query(CheckIn).filter(CheckIn.goal_id.in_(goal_ids)).delete(synchronize_session=False)
-                
-                # Delete goals
-                db.query(Goal).filter(Goal.user_id == existing.id).delete()
-                
-                # Delete user
-                db.delete(existing)
+        # Update manager password
+        manager = db.query(User).filter(User.email == "manager@demo.com").first()
+        if manager:
+            manager.password_hash = "$2b$12$lDwzzrkRkTXZCkSMRHJEjeLVdjvhXxddCIN8rGinBGaXElTNxDKDi"
+            fixed_users.append("manager@demo.com")
+        
+        # Update employee password
+        employee = db.query(User).filter(User.email == "emp1@demo.com").first()
+        if employee:
+            employee.password_hash = "$2b$12$cC/kJp64mAy/fBULwuZNouvl5DBIVScge2fCuwrjgLzhArwAqeVDu"
+            fixed_users.append("emp1@demo.com")
+        
         db.commit()
-        
-        # Create admin
-        admin = User(
-            email="admin@demo.com",
-            password_hash="$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW",
-            full_name="Admin User",
-            role="Admin",
-            department="IT"
-        )
-        db.add(admin)
-        db.flush()
-        created_users.append("admin@demo.com")
-        
-        # Create manager
-        manager = User(
-            email="manager@demo.com",
-            password_hash="$2b$12$lDwzzrkRkTXZCkSMRHJEjeLVdjvhXxddCIN8rGinBGaXElTNxDKDi",
-            full_name="Manager User",
-            role="Manager",
-            department="Engineering"
-        )
-        db.add(manager)
-        db.flush()
-        created_users.append("manager@demo.com")
-        
-        # Create employee
-        employee = User(
-            email="emp1@demo.com",
-            password_hash="$2b$12$cC/kJp64mAy/fBULwuZNouvl5DBIVScge2fCuwrjgLzhArwAqeVDu",
-            full_name="Employee One",
-            role="Employee",
-            department="Engineering",
-            manager_id=manager.id
-        )
-        db.add(employee)
-        db.commit()
-        created_users.append("emp1@demo.com")
         
         return {
-            "message": "All demo users created successfully",
-            "users": created_users,
+            "message": "Demo user passwords fixed successfully",
+            "users": fixed_users,
             "credentials": {
                 "admin": "admin@demo.com / password123",
                 "manager": "manager@demo.com / password123",
