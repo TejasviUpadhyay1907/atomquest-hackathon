@@ -41,11 +41,20 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
     """Fix passwords for existing demo users and create if missing"""
     try:
         from app.models.user import UserRole
+        from app.core.security import get_password_hash, verify_password
         fixed_users = []
         created_users = []
         
-        # Valid bcrypt hash for "password123" - generated with bcrypt directly
-        VALID_HASH = "$2b$10$YRgFr/aMdQ52.h1IUkXcgu0xNIHS4fdsg9vjKQLh9Zvb9o7EHOdEm"
+        # Generate hash ON THIS SERVER to ensure compatibility
+        VALID_HASH = get_password_hash("password123")
+        print(f"Generated hash on server: {VALID_HASH}")
+        
+        # Test it immediately
+        test_result = verify_password("password123", VALID_HASH)
+        print(f"Hash verification test: {test_result}")
+        
+        if not test_result:
+            return {"error": "Generated hash doesn't verify! Bcrypt issue on server."}
         
         # Demo users configuration
         demo_users = [
@@ -74,7 +83,7 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
             user = db.query(User).filter(User.email == email).first()
             
             if user:
-                # Update existing user - use ORM
+                # Update existing user
                 user.password_hash = VALID_HASH
                 user.role = user_data["role"]
                 user.full_name = user_data["full_name"]
@@ -100,7 +109,6 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
             user = db.query(User).filter(User.email == user_data["email"]).first()
             if user:
                 # Test password verification
-                from app.core.security import verify_password
                 password_works = verify_password("password123", user.password_hash)
                 verification.append({
                     "email": user.email,
@@ -114,6 +122,7 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
             "fixed": fixed_users,
             "created": created_users,
             "verification": verification,
+            "generated_hash": VALID_HASH[:30] + "...",
             "credentials": {
                 "admin": "admin@demo.com / password123",
                 "manager": "manager@demo.com / password123",
