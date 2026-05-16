@@ -114,6 +114,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token"""
     try:
         print(f"🔐 Login attempt for: {credentials.email}")
+        print(f"   Password length: {len(credentials.password)} chars")
         
         # Find user
         user = db.query(User).filter(User.email == credentials.email).first()
@@ -126,6 +127,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
             )
         
         print(f"✓ User found: {user.full_name}, Role: {user.role}")
+        print(f"   Hash length: {len(user.password_hash)} chars")
         
         # Verify password
         password_valid = verify_password(credentials.password, user.password_hash)
