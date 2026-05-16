@@ -40,17 +40,18 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def create_demo_user(db: Session = Depends(get_db)):
     """Create a demo admin user for testing"""
     try:
-        # Check if user exists
+        # Delete existing test user if exists
         existing = db.query(User).filter(User.email == "test@admin.com").first()
         if existing:
-            return {"message": "Demo user already exists", "email": "test@admin.com"}
+            db.delete(existing)
+            db.commit()
         
-        # Create user
+        # Create user with simple password
         user = User(
             email="test@admin.com",
-            password_hash=get_password_hash("password123"),
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS/Z.Oe6i",  # Pre-hashed "password123"
             full_name="Test Admin",
-            role="admin",
+            role="Admin",
             department="IT"
         )
         db.add(user)
@@ -62,6 +63,7 @@ def create_demo_user(db: Session = Depends(get_db)):
             "password": "password123"
         }
     except Exception as e:
+        db.rollback()
         return {"error": str(e)}
 
 
