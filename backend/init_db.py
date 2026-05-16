@@ -49,10 +49,9 @@ def init_database():
         admin = User(
             email="admin@demo.com",
             full_name="Admin User",
-            hashed_password=get_password_hash("password123"),
+            password_hash=get_password_hash("password123"),
             role="admin",
-            department="IT",
-            is_active=True
+            department="IT"
         )
         db.add(admin)
         db.flush()
@@ -61,10 +60,9 @@ def init_database():
         manager = User(
             email="manager@demo.com",
             full_name="Manager User",
-            hashed_password=get_password_hash("password123"),
+            password_hash=get_password_hash("password123"),
             role="manager",
-            department="Engineering",
-            is_active=True
+            department="Engineering"
         )
         db.add(manager)
         db.flush()
@@ -73,11 +71,10 @@ def init_database():
         employee = User(
             email="emp1@demo.com",
             full_name="Employee One",
-            hashed_password=get_password_hash("password123"),
+            password_hash=get_password_hash("password123"),
             role="employee",
             department="Engineering",
-            manager_id=manager.id,
-            is_active=True
+            manager_id=manager.id
         )
         db.add(employee)
         
