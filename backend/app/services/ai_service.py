@@ -7,22 +7,28 @@ class AIService:
     """Service for AI-powered goal suggestions using OpenAI"""
     
     def __init__(self):
-        if settings.OPENAI_API_KEY:
-            # Support OpenRouter for access to multiple AI models including FREE Gemini
-            api_key = settings.OPENAI_API_KEY
-            print(f"DEBUG: API Key starts with: {api_key[:10]}...")
-            
-            if api_key.startswith("sk-or-"):
-                print("DEBUG: Using OpenRouter with base_url: https://openrouter.ai/api/v1")
-                self.client = OpenAI(
-                    api_key=api_key,
-                    base_url="https://openrouter.ai/api/v1"
-                )
-            else:
-                print("DEBUG: Using OpenAI directly (no base_url)")
-                self.client = OpenAI(api_key=api_key)
-        else:
-            self.client = None
+        self._client = None
+        self._initialized = False
+    
+    def _get_client(self):
+        """Lazy initialization of OpenAI client"""
+        if not self._initialized:
+            self._initialized = True
+            if settings.OPENAI_API_KEY:
+                # Support OpenRouter for access to multiple AI models including FREE Gemini
+                api_key = settings.OPENAI_API_KEY
+                print(f"DEBUG: API Key starts with: {api_key[:10]}...")
+                
+                if api_key.startswith("sk-or-"):
+                    print("DEBUG: Using OpenRouter with base_url: https://openrouter.ai/api/v1")
+                    self._client = OpenAI(
+                        api_key=api_key,
+                        base_url="https://openrouter.ai/api/v1"
+                    )
+                else:
+                    print("DEBUG: Using OpenAI directly (no base_url)")
+                    self._client = OpenAI(api_key=api_key)
+        return self._client
     
     def suggest_goals(
         self,
@@ -34,7 +40,8 @@ class AIService:
         Generate AI-powered goal suggestions
         Returns: List of suggested goals with title, description, target, uom_type
         """
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return []
         
         try:
@@ -66,7 +73,7 @@ Format your response as a JSON array with this structure:
 Make goals realistic and aligned with typical {role} responsibilities in {department}.
 Ensure suggested weightages total 100%."""
 
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model="openai/gpt-3.5-turbo",  # Using GPT-3.5 via OpenRouter (uses free credit)
                 messages=[
                     {"role": "system", "content": "You are an expert HR consultant specializing in goal setting and performance management."},
@@ -99,7 +106,8 @@ Ensure suggested weightages total 100%."""
         """
         Use AI to improve goal description to make it more SMART
         """
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return description
         
         try:
@@ -110,7 +118,7 @@ Current Description: {description}
 
 Provide an improved description that is clear, specific, and measurable. Keep it concise (2-3 sentences)."""
 
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model="openai/gpt-3.5-turbo",  # Using GPT-3.5 via OpenRouter (uses free credit)
                 messages=[
                     {"role": "system", "content": "You are an expert at writing SMART goals."},
