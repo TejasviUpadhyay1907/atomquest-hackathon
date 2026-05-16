@@ -36,32 +36,64 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/create-demo-user")
-def create_demo_user(db: Session = Depends(get_db)):
-    """Create a demo admin user for testing"""
+@router.post("/create-demo-users")
+def create_demo_users(db: Session = Depends(get_db)):
+    """Create all 3 demo users: admin, manager, employee"""
     try:
-        # Delete existing test user if exists
-        existing = db.query(User).filter(User.email == "test@admin.com").first()
-        if existing:
-            db.delete(existing)
-            db.commit()
+        created_users = []
         
-        # Create user with properly hashed password
-        # Hash for "pass123"
-        user = User(
-            email="test@admin.com",
-            password_hash="$2b$12$yv6YIEOUUJMad0sZ3AObme3JtiovOwI2dmvEUoODMVvjUi9QacFi2",
-            full_name="Test Admin",
+        # Delete existing demo users if they exist
+        for email in ["admin@demo.com", "manager@demo.com", "emp1@demo.com"]:
+            existing = db.query(User).filter(User.email == email).first()
+            if existing:
+                db.delete(existing)
+        db.commit()
+        
+        # Create admin
+        admin = User(
+            email="admin@demo.com",
+            password_hash="$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW",
+            full_name="Admin User",
             role="Admin",
             department="IT"
         )
-        db.add(user)
+        db.add(admin)
+        db.flush()
+        created_users.append("admin@demo.com")
+        
+        # Create manager
+        manager = User(
+            email="manager@demo.com",
+            password_hash="$2b$12$lDwzzrkRkTXZCkSMRHJEjeLVdjvhXxddCIN8rGinBGaXElTNxDKDi",
+            full_name="Manager User",
+            role="Manager",
+            department="Engineering"
+        )
+        db.add(manager)
+        db.flush()
+        created_users.append("manager@demo.com")
+        
+        # Create employee
+        employee = User(
+            email="emp1@demo.com",
+            password_hash="$2b$12$cC/kJp64mAy/fBULwuZNouvl5DBIVScge2fCuwrjgLzhArwAqeVDu",
+            full_name="Employee One",
+            role="Employee",
+            department="Engineering",
+            manager_id=manager.id
+        )
+        db.add(employee)
         db.commit()
+        created_users.append("emp1@demo.com")
         
         return {
-            "message": "Demo user created successfully",
-            "email": "test@admin.com",
-            "password": "pass123"
+            "message": "All demo users created successfully",
+            "users": created_users,
+            "credentials": {
+                "admin": "admin@demo.com / password123",
+                "manager": "manager@demo.com / password123",
+                "employee": "emp1@demo.com / password123"
+            }
         }
     except Exception as e:
         db.rollback()
