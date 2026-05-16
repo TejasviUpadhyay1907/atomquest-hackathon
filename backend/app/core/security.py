@@ -16,7 +16,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
             # Truncate to 72 bytes
             plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
         
-        return pwd_context.verify(plain_password, hashed_password)
+        # Try passlib first
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception as passlib_error:
+            print(f"Passlib verification failed: {passlib_error}, trying direct bcrypt")
+            # Fallback to direct bcrypt
+            import bcrypt
+            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
     except Exception as e:
         print(f"Password verification error: {e}")
         return False
