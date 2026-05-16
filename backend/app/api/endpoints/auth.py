@@ -44,8 +44,8 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
         fixed_users = []
         created_users = []
         
-        # Valid bcrypt hash for "password123"
-        VALID_HASH = "$2b$12$a5Ypkkro4x3SeSqh/76bIedrwAMVDPZUt5r8oE3K9G1ftlqib4XWW"
+        # Valid bcrypt hash for "password123" - generated with bcrypt directly
+        VALID_HASH = "$2b$10$YRgFr/aMdQ52.h1IUkXcgu0xNIHS4fdsg9vjKQLh9Zvb9o7EHOdEm"
         
         # Demo users configuration
         demo_users = [
