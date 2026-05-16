@@ -41,7 +41,6 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
     """Fix passwords for existing demo users and create if missing"""
     try:
         from app.models.user import UserRole
-        from sqlalchemy import text
         fixed_users = []
         created_users = []
         
@@ -75,17 +74,11 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
             user = db.query(User).filter(User.email == email).first()
             
             if user:
-                # Update existing user with raw SQL to ensure it works
-                db.execute(
-                    text("UPDATE users SET password_hash = :hash, role = :role, full_name = :name, department = :dept WHERE email = :email"),
-                    {
-                        "hash": VALID_HASH,
-                        "role": user_data["role"].value,
-                        "name": user_data["full_name"],
-                        "dept": user_data["department"],
-                        "email": email
-                    }
-                )
+                # Update existing user - use ORM
+                user.password_hash = VALID_HASH
+                user.role = user_data["role"]
+                user.full_name = user_data["full_name"]
+                user.department = user_data["department"]
                 fixed_users.append(email)
             else:
                 # Create new user
@@ -106,10 +99,14 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
         for user_data in demo_users:
             user = db.query(User).filter(User.email == user_data["email"]).first()
             if user:
+                # Test password verification
+                from app.core.security import verify_password
+                password_works = verify_password("password123", user.password_hash)
                 verification.append({
                     "email": user.email,
                     "hash_length": len(user.password_hash),
-                    "hash_preview": user.password_hash[:20] + "..."
+                    "hash_preview": user.password_hash[:20] + "...",
+                    "password_works": password_works
                 })
         
         return {
