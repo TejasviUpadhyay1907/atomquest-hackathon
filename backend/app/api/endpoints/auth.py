@@ -42,19 +42,26 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
     try:
         from app.models.user import UserRole
         from app.core.security import get_password_hash, verify_password
+        import bcrypt
         fixed_users = []
         created_users = []
         
-        # Generate hash ON THIS SERVER to ensure compatibility
-        VALID_HASH = get_password_hash("password123")
-        print(f"Generated hash on server: {VALID_HASH}")
+        # Generate hash directly with bcrypt to avoid passlib issues
+        password = "password123"
+        salt = bcrypt.gensalt(rounds=10)
+        VALID_HASH = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        print(f"Generated hash: {VALID_HASH}")
         
-        # Test it immediately
-        test_result = verify_password("password123", VALID_HASH)
-        print(f"Hash verification test: {test_result}")
+        # Test it immediately with direct bcrypt
+        test_result = bcrypt.checkpw(password.encode('utf-8'), VALID_HASH.encode('utf-8'))
+        print(f"Direct bcrypt verification: {test_result}")
         
         if not test_result:
-            return {"error": "Generated hash doesn't verify! Bcrypt issue on server."}
+            return {"error": "Generated hash doesn't verify with direct bcrypt!"}
+        
+        # Test with our verify function
+        test_result2 = verify_password(password, VALID_HASH)
+        print(f"verify_password function: {test_result2}")
         
         # Demo users configuration
         demo_users = [
