@@ -33,4 +33,7 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+# Create settings instance and clean DATABASE_URL
 settings = Settings()
+# Strip any whitespace, newlines, or special characters from DATABASE_URL
+settings.DATABASE_URL = settings.DATABASE_URL.strip().replace('\n', '').replace('\r', '')
