@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Login - Goal Tracking Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .credentials {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .credentials div {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Goal Tracking Portal</h1>
+        <h3>Auto Login</h3>
+        
+        <div class="credentials">
+            <div><strong>Available Users:</strong></div>
+            <div>👤 Employee: emp1@demo.com</div>
+            <div>👔 Manager: manager1@demo.com</div>
+            <div>⚙️ Admin: admin@demo.com</div>
+            <div>🔑 Password: password123</div>
+        </div>
+
+        <div id="status" class="status loading">
+            Ready to login...
+        </div>
+
+        <button onclick="loginAs('emp1@demo.com')">Login as Employee</button>
+        <button onclick="loginAs('manager1@demo.com')">Login as Manager</button>
+        <button onclick="loginAs('admin@demo.com')">Login as Admin</button>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const APP_URL = 'http://localhost:3000';
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        async function loginAs(email) {
+            updateStatus(`Logging in as ${email}...`, 'loading');
+
+            try {
+                // Clear old data
+                localStorage.clear();
+
+                // Login
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        password: 'password123' 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+
+                // Save token and user
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                updateStatus(`✅ Login successful! Redirecting...`, 'success');
+
+                // Redirect based on role
+                setTimeout(() => {
+                    if (data.user.role === 'Admin') {
+                        window.location.href = `${APP_URL}/admin/goals`;
+                    } else if (data.user.role === 'Manager') {
+                        window.location.href = `${APP_URL}/manager/approvals`;
+                    } else {
+                        window.location.href = `${APP_URL}/employee/goals`;
+                    }
+                }, 1000);
+
+            } catch (error) {
+                updateStatus(`❌ Login failed: ${error.message}`, 'error');
+                console.error('Login error:', error);
+            }
+        }
+
+        // Check if backend is running
+        fetch(`${API_URL}/`)
+            .then(() => updateStatus('✅ Backend is running! Click a button to login.', 'success'))
+            .catch(() => updateStatus('❌ Backend is not running! Start it first.', 'error'));
+    </script>
+</body>
+</html>
