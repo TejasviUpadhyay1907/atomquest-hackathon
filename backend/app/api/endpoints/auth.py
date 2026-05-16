@@ -41,19 +41,15 @@ def create_demo_users(db: Session = Depends(get_db)):
     """Create all 3 demo users: admin, manager, employee"""
     try:
         from app.models.goal import Goal
-        from app.models.check_in import CheckIn
-        from app.models.notification import Notification
         
         created_users = []
         
-        # Delete existing demo users and their related data
+        # Delete existing demo users and their goals
         for email in ["admin@demo.com", "manager@demo.com", "emp1@demo.com"]:
             existing = db.query(User).filter(User.email == email).first()
             if existing:
-                # Delete related data first
+                # Delete goals (which will cascade to check-ins)
                 db.query(Goal).filter(Goal.user_id == existing.id).delete()
-                db.query(CheckIn).filter(CheckIn.user_id == existing.id).delete()
-                db.query(Notification).filter(Notification.user_id == existing.id).delete()
                 db.delete(existing)
         db.commit()
         
