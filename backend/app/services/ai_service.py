@@ -15,19 +15,23 @@ class AIService:
         if not self._initialized:
             self._initialized = True
             if settings.OPENAI_API_KEY:
-                # Support OpenRouter for access to multiple AI models including FREE Gemini
-                api_key = settings.OPENAI_API_KEY
-                print(f"DEBUG: API Key starts with: {api_key[:10]}...")
-                
-                if api_key.startswith("sk-or-"):
-                    print("DEBUG: Using OpenRouter with base_url: https://openrouter.ai/api/v1")
-                    self._client = OpenAI(
-                        api_key=api_key,
-                        base_url="https://openrouter.ai/api/v1"
-                    )
-                else:
-                    print("DEBUG: Using OpenAI directly (no base_url)")
-                    self._client = OpenAI(api_key=api_key)
+                try:
+                    # Support OpenRouter for access to multiple AI models including FREE Gemini
+                    api_key = settings.OPENAI_API_KEY
+                    print(f"DEBUG: API Key starts with: {api_key[:10]}...")
+                    
+                    if api_key.startswith("sk-or-"):
+                        print("DEBUG: Using OpenRouter with base_url: https://openrouter.ai/api/v1")
+                        self._client = OpenAI(
+                            api_key=api_key,
+                            base_url="https://openrouter.ai/api/v1"
+                        )
+                    else:
+                        print("DEBUG: Using OpenAI directly (no base_url)")
+                        self._client = OpenAI(api_key=api_key)
+                except Exception as e:
+                    print(f"WARNING: Failed to initialize OpenAI client: {e}")
+                    self._client = None
         return self._client
     
     def suggest_goals(
