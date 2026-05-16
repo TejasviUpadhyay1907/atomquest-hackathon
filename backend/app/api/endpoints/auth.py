@@ -46,10 +46,11 @@ def create_demo_user(db: Session = Depends(get_db)):
             db.delete(existing)
             db.commit()
         
-        # Create user with simple password
+        # Create user with properly hashed password
+        # Hash for "pass123"
         user = User(
             email="test@admin.com",
-            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS/Z.Oe6i",  # Pre-hashed "password123"
+            password_hash="$2b$12$yv6YIEOUUJMad0sZ3AObme3JtiovOwI2dmvEUoODMVvjUi9QacFi2",
             full_name="Test Admin",
             role="Admin",
             department="IT"
@@ -60,7 +61,7 @@ def create_demo_user(db: Session = Depends(get_db)):
         return {
             "message": "Demo user created successfully",
             "email": "test@admin.com",
-            "password": "password123"
+            "password": "pass123"
         }
     except Exception as e:
         db.rollback()
