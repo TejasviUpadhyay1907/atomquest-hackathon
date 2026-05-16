@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from app.core.config import settings
 
 # Create FastAPI app
@@ -8,6 +10,20 @@ app = FastAPI(
     description="API for AtomQuest Hackathon - Goal Setting & Tracking Portal",
     version="1.0.0"
 )
+
+# Custom CORS middleware to ensure headers are always added
+class CustomCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "*"
+        return response
+
+# Add custom CORS middleware first
+app.add_middleware(CustomCORSMiddleware)
 
 # Configure CORS - MUST be before route definitions
 app.add_middleware(
