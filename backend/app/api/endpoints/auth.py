@@ -67,26 +67,48 @@ def create_demo_user(db: Session = Depends(get_db)):
         return {"error": str(e)}
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token"""
-    # Find user
-    user = db.query(User).filter(User.email == credentials.email).first()
-    
-    if not user or not verify_password(credentials.password, user.password_hash):
+    try:
+        # Find user
+        user = db.query(User).filter(User.email == credentials.email).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        if not verify_password(credentials.password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        # Create access token - IMPORTANT: sub must be a string
+        access_token = create_access_token(data={"sub": str(user.id)})
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+                "department": user.department,
+                "manager_id": user.manager_id
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
         )
-    
-    # Create access token - IMPORTANT: sub must be a string
-    access_token = create_access_token(data={"sub": str(user.id)})
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": user
-    }
 
 
 @router.get("/me", response_model=UserResponse)

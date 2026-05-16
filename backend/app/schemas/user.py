@@ -29,6 +29,11 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class TokenSimple(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
