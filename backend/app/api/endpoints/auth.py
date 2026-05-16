@@ -36,6 +36,35 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
+@router.post("/create-demo-user")
+def create_demo_user(db: Session = Depends(get_db)):
+    """Create a demo admin user for testing"""
+    try:
+        # Check if user exists
+        existing = db.query(User).filter(User.email == "test@admin.com").first()
+        if existing:
+            return {"message": "Demo user already exists", "email": "test@admin.com"}
+        
+        # Create user
+        user = User(
+            email="test@admin.com",
+            password_hash=get_password_hash("password123"),
+            full_name="Test Admin",
+            role="admin",
+            department="IT"
+        )
+        db.add(user)
+        db.commit()
+        
+        return {
+            "message": "Demo user created successfully",
+            "email": "test@admin.com",
+            "password": "password123"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token"""
