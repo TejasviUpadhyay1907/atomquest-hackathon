@@ -41,6 +41,7 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
     """Fix passwords for existing demo users and create if missing"""
     try:
         from app.models.user import UserRole
+        from sqlalchemy import text
         fixed_users = []
         created_users = []
         
@@ -74,11 +75,17 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
             user = db.query(User).filter(User.email == email).first()
             
             if user:
-                # Update existing user
-                user.password_hash = VALID_HASH
-                user.role = user_data["role"]
-                user.full_name = user_data["full_name"]
-                user.department = user_data["department"]
+                # Update existing user with raw SQL to ensure it works
+                db.execute(
+                    text("UPDATE users SET password_hash = :hash, role = :role, full_name = :name, department = :dept WHERE email = :email"),
+                    {
+                        "hash": VALID_HASH,
+                        "role": user_data["role"].value,
+                        "name": user_data["full_name"],
+                        "dept": user_data["department"],
+                        "email": email
+                    }
+                )
                 fixed_users.append(email)
             else:
                 # Create new user
@@ -94,10 +101,22 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
         
         db.commit()
         
+        # Verify the update worked
+        verification = []
+        for user_data in demo_users:
+            user = db.query(User).filter(User.email == user_data["email"]).first()
+            if user:
+                verification.append({
+                    "email": user.email,
+                    "hash_length": len(user.password_hash),
+                    "hash_preview": user.password_hash[:20] + "..."
+                })
+        
         return {
             "message": "Demo users fixed/created successfully",
             "fixed": fixed_users,
             "created": created_users,
+            "verification": verification,
             "credentials": {
                 "admin": "admin@demo.com / password123",
                 "manager": "manager@demo.com / password123",
@@ -106,7 +125,9 @@ def fix_demo_passwords(db: Session = Depends(get_db)):
         }
     except Exception as e:
         db.rollback()
-        return {"error": str(e)}
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 
 @router.post("/login")
