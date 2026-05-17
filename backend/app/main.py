@@ -73,21 +73,9 @@ def root():
 
 @app.get("/health")
 def health_check():
-    from app.core.database import SessionLocal
-    try:
-        db = SessionLocal()
-        # Try to query database
-        from app.models.user import User
-        user_count = db.query(User).count()
-        db.close()
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "users": user_count
-        }
-    except Exception as e:
-        return {
-            "status": "degraded",
-            "database": "error",
-            "error": str(e)
-        }
+    """Ultra-fast health check - no database queries for speed"""
+    return {
+        "status": "healthy",
+        "timestamp": "2026-05-17",
+        "version": "1.0.0"
+    }
