@@ -99,146 +99,254 @@ const AnalyticsDashboard = () => {
 
   return (
     <div>
-      <Card title="Analytics Dashboard" extra={
-        <Select value={selectedQuarter} onChange={setSelectedQuarter} style={{ width: 120 }}>
-          <Option value="Q1">Q1</Option>
-          <Option value="Q2">Q2</Option>
-          <Option value="Q3">Q3</Option>
-          <Option value="Q4">Q4</Option>
-        </Select>
-      }>
-        <Row gutter={[16, 16]}>
-          {/* Goal Distribution by Thrust Area */}
-          <Col xs={24} lg={12}>
-            <Card title="Goal Distribution by Thrust Area" size="small">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={goalDistributionData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {goalDistributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
+      {/* Metric Cards Row */}
+      <div className="summary-cards-row" style={{ marginBottom: 24 }}>
+        <div className="metric-card">
+          <div className="metric-card-icon blue">
+            <span>👥</span>
+          </div>
+          <div className="stat-number">{completion.total_employees || 0}</div>
+          <div className="stat-label">Total Employees</div>
+          <div className="stat-trend neutral">
+            Active in system
+          </div>
+        </div>
 
-          {/* Status Overview */}
-          <Col xs={24} lg={12}>
-            <Card title="Goal Status Overview" size="small">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={statusOverviewData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {statusOverviewData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
+        <div className="metric-card">
+          <div className="metric-card-icon green">
+            <span>✅</span>
+          </div>
+          <div className="stat-number">{completion.fully_completed || 0}</div>
+          <div className="stat-label">Completed Check-ins</div>
+          <div className="stat-trend up">
+            {selectedQuarter} Quarter
+          </div>
+        </div>
 
-          {/* Completion Rates */}
-          <Col xs={24} lg={12}>
-            <Card title={`Completion Rates - ${selectedQuarter}`} size="small">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={completionRatesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="completion" fill="#52c41a" name="Completion %" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
+        <div className="metric-card">
+          <div className="metric-card-icon orange">
+            <span>🎯</span>
+          </div>
+          <div className="stat-number">{goalDistributionData.reduce((sum, item) => sum + item.value, 0)}</div>
+          <div className="stat-label">Total Goals</div>
+          <div className="stat-trend neutral">
+            All thrust areas
+          </div>
+        </div>
 
-          {/* Progress Trends */}
-          <Col xs={24} lg={12}>
-            <Card title="Average Progress by Quarter" size="small">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={progressByQuarter}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="quarter" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="progress" stroke="#1890ff" strokeWidth={2} name="Progress %" />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
+        <div className="metric-card">
+          <div className="metric-card-icon red">
+            <span>📊</span>
+          </div>
+          <div className="stat-number">{achievements.length}</div>
+          <div className="stat-label">Total Check-ins</div>
+          <div className="stat-trend neutral">
+            All quarters
+          </div>
+        </div>
+      </div>
 
-          {/* UoM Distribution */}
-          <Col xs={24} lg={12}>
-            <Card title="Goals by UoM Type" size="small">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={uomData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#722ed1" name="Count" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
-
-          {/* Summary Stats */}
-          <Col xs={24} lg={12}>
-            <Card title="Summary Statistics" size="small">
-              <div style={{ padding: 16 }}>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 32, fontWeight: 'bold', color: '#1890ff' }}>
-                    {completion.total_employees || 0}
+      {/* Main Dashboard Card */}
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <h2 className="card-modern-title">Analytics Dashboard</h2>
+          <Select 
+            value={selectedQuarter} 
+            onChange={setSelectedQuarter} 
+            style={{ width: 120 }}
+            size="large"
+          >
+            <Option value="Q1">Q1 2024</Option>
+            <Option value="Q2">Q2 2024</Option>
+            <Option value="Q3">Q3 2024</Option>
+            <Option value="Q4">Q4 2024</Option>
+          </Select>
+        </div>
+        
+        <div className="card-modern-body">
+          <Row gutter={[24, 24]}>
+            {/* Goal Distribution by Thrust Area */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Goal Distribution by Thrust Area</div>
+                    <div className="chart-subtitle">Distribution across different focus areas</div>
                   </div>
-                  <div style={{ color: '#666' }}>Total Employees</div>
                 </div>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 32, fontWeight: 'bold', color: '#52c41a' }}>
-                    {completion.fully_completed || 0}
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={goalDistributionData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {goalDistributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+
+            {/* Status Overview */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Goal Status Overview</div>
+                    <div className="chart-subtitle">Current status distribution</div>
                   </div>
-                  <div style={{ color: '#666' }}>Completed Check-ins</div>
                 </div>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 32, fontWeight: 'bold', color: '#faad14' }}>
-                    {goalDistributionData.reduce((sum, item) => sum + item.value, 0)}
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statusOverviewData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {statusOverviewData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+
+            {/* Completion Rates */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Completion Rates - {selectedQuarter}</div>
+                    <div className="chart-subtitle">Employee performance this quarter</div>
                   </div>
-                  <div style={{ color: '#666' }}>Total Goals</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 32, fontWeight: 'bold', color: '#722ed1' }}>
-                    {achievements.length}
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={completionRatesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="completion" fill="#52c41a" name="Completion %" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+
+            {/* Progress Trends */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Average Progress by Quarter</div>
+                    <div className="chart-subtitle">Quarterly performance trends</div>
                   </div>
-                  <div style={{ color: '#666' }}>Total Check-ins</div>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={progressByQuarter}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="quarter" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="progress" stroke="#1890ff" strokeWidth={3} name="Progress %" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+
+            {/* UoM Distribution */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Goals by UoM Type</div>
+                    <div className="chart-subtitle">Measurement type distribution</div>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={uomData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="#722ed1" name="Count" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+
+            {/* Team Performance Table */}
+            <Col xs={24} lg={12}>
+              <div className="chart-container">
+                <div className="chart-header">
+                  <div>
+                    <div className="chart-title">Team Performance</div>
+                    <div className="chart-subtitle">Individual completion rates</div>
+                  </div>
+                </div>
+                <div style={{ padding: '16px 0' }}>
+                  {completionRatesData.slice(0, 6).map((emp, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      marginBottom: 16,
+                      padding: '12px 16px',
+                      background: '#f8fafc',
+                      borderRadius: 8,
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ 
+                        width: 40, 
+                        height: 40, 
+                        borderRadius: '50%', 
+                        background: `linear-gradient(135deg, ${COLORS[index % COLORS.length]}, ${COLORS[(index + 1) % COLORS.length]})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 600,
+                        marginRight: 12
+                      }}>
+                        {emp.name.charAt(0)}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 4 }}>{emp.name}</div>
+                        <div className="table-progress-cell">
+                          <div className="table-progress-bar">
+                            <div 
+                              className="table-progress-fill" 
+                              style={{ width: `${emp.completion}%` }}
+                            />
+                          </div>
+                          <div className="table-progress-text">{emp.completion}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </Card>
-          </Col>
-        </Row>
-      </Card>
+            </Col>
+          </Row>
+        </div>
+      </div>
     </div>
   );
 };
