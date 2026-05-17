@@ -1,33 +1,48 @@
-import React from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { Spin } from 'antd';
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import NotFoundPage from './pages/NotFoundPage';
-import DashboardLayout from './components/DashboardLayout';
-import EmployeeGoals from './pages/employee/EmployeeGoals';
-import EmployeeCheckins from './pages/employee/EmployeeCheckins';
-import ManagerApprovals from './pages/manager/ManagerApprovals';
-import ManagerTeamCheckins from './pages/manager/ManagerTeamCheckins';
-import AdminGoals from './pages/admin/AdminGoals';
-import AdminSharedGoals from './pages/admin/AdminSharedGoals';
-import AdminAuditLogs from './pages/admin/AdminAuditLogs';
-import AnalyticsDashboard from './pages/AnalyticsDashboard';
-import NotificationsPage from './pages/NotificationsPage';
+// Lazy load pages for better performance
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
+const EmployeeGoals = lazy(() => import('./pages/employee/EmployeeGoals'));
+const EmployeeCheckins = lazy(() => import('./pages/employee/EmployeeCheckins'));
+const ManagerApprovals = lazy(() => import('./pages/manager/ManagerApprovals'));
+const ManagerTeamCheckins = lazy(() => import('./pages/manager/ManagerTeamCheckins'));
+const AdminGoals = lazy(() => import('./pages/admin/AdminGoals'));
+const AdminSharedGoals = lazy(() => import('./pages/admin/AdminSharedGoals'));
+const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs'));
+const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+  }}>
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
+      <Spin size="large" />
+      <div style={{ marginTop: '16px', color: '#666' }}>Loading AtomQuest...</div>
+    </div>
+  </div>
+);
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
-      </div>
+    return <LoadingSpinner />;
+  }
     );
   }
 
@@ -45,24 +60,28 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 function App() {
   const { user, loading } = useAuth();
 
+  // Performance monitoring
+  useEffect(() => {
+    console.log('AtomQuest Goal Tracker - React App Initialized');
+    console.log('Environment:', import.meta.env.MODE);
+    console.log('API URL:', import.meta.env.VITE_API_URL);
+  }, []);
+
   if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <ErrorBoundary>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+          <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/*"
+          {/* Protected Routes */}
+          <Route
+            path="/*"
           element={
             <ProtectedRoute>
               <DashboardLayout>
@@ -144,6 +163,7 @@ function App() {
         {/* Catch-all 404 for non-dashboard routes */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
     </ErrorBoundary>
   );
 }

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# AtomQuest Goal Tracking Portal
+# AI-powered goal setting and tracking system
+# Built for AtomQuest Hackathon 1.0
+
+Sitemap: https://atomquest-frontend.vercel.app/sitemap.xml

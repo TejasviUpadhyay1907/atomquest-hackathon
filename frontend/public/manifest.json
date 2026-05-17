@@ -1,0 +1,45 @@
+{
+  "name": "AtomQuest Goal Tracking Portal",
+  "short_name": "AtomQuest Goals",
+  "description": "AI-powered goal setting and tracking portal with quarterly check-ins, manager approvals, and real-time analytics",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "business", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/preview.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "features": [
+    "goal-tracking",
+    "performance-management",
+    "quarterly-checkins",
+    "ai-suggestions",
+    "manager-approvals",
+    "real-time-analytics"
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
