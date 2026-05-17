@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 ULTIMATE DETAILED COMPREHENSIVE TEST SUITE
 Tests EVERY single feature like a hackathon judge
@@ -6,11 +7,18 @@ Compares against industry standards
 Total Points: 500 (Most detailed test possible)
 """
 
+import sys
+import io
 import requests
 import json
 import time
 from datetime import datetime
 from typing import Dict, List, Tuple
+
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 BASE_URL = "https://atomquest-backend-33sg.onrender.com"
 

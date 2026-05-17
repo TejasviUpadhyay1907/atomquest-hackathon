@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 FRONTEND DEEP ANALYSIS TEST SUITE
 Comprehensive testing of frontend UI, UX, performance, and functionality
@@ -6,6 +7,8 @@ Identifies exact issues affecting frontend score
 Total Points: 500 (Frontend-focused detailed analysis)
 """
 
+import sys
+import io
 import requests
 import json
 import time
@@ -13,6 +16,11 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 import re
 from urllib.parse import urljoin, urlparse
+
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Frontend URL
 FRONTEND_URL = "https://atomquest-frontend.vercel.app"

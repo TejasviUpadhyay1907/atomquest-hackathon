@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 COMPLETE APPLICATION TEST SUITE - BACKEND + FRONTEND (Basic Version)
 Tests EVERY aspect of the application like a hackathon judge
@@ -6,6 +7,8 @@ Backend APIs + Frontend HTTP + User Experience + Integration
 Total Points: 1000 (Most comprehensive test possible)
 """
 
+import sys
+import io
 import requests
 import json
 import time
@@ -13,6 +16,11 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 import threading
 import re
+
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # URLs
 BACKEND_URL = "https://atomquest-backend-33sg.onrender.com"
