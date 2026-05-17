@@ -155,6 +155,11 @@ const EmployeeCheckins = () => {
     );
   }
 
+  const totalCheckins = checkins.length;
+  const completedCheckins = checkins.filter(c => c.status === 'Completed').length;
+  const onTrackCheckins = checkins.filter(c => c.status === 'On Track').length;
+  const notStartedCheckins = checkins.filter(c => c.status === 'Not Started').length;
+
   const columns = [
     {
       title: 'Goal',
@@ -211,14 +216,21 @@ const EmployeeCheckins = () => {
       key: 'status',
       render: (status) => {
         try {
-          const colors = {
-            'Not Started': 'default',
-            'On Track': 'processing',
-            'Completed': 'success',
+          const styleMap = {
+            'Not Started': { background: '#f3f4f6', color: '#374151' },
+            'On Track':    { background: '#dbeafe', color: '#1e40af' },
+            'Completed':   { background: '#d1fae5', color: '#065f46' },
           };
-          return <Tag color={colors[status]}>{status}</Tag>;
+          const s = styleMap[status] || styleMap['Not Started'];
+          return (
+            <span className="status-badge" style={s}>
+              {status === 'Completed' && '✅ '}
+              {status === 'On Track' && '🔵 '}
+              {status === 'Not Started' && '⚪ '}
+              {status}
+            </span>
+          );
         } catch (error) {
-          console.error('Error rendering status:', error);
           return status;
         }
       },
@@ -273,50 +285,105 @@ const EmployeeCheckins = () => {
 
   return (
     <div>
-      <Card
-        title="Quarterly Check-ins"
-        extra={
+      {/* Summary Cards */}
+      <div className="summary-cards-row">
+        <div className="metric-card">
+          <div className="metric-card-icon blue"><span>📋</span></div>
+          <div className="stat-number">{goals.length}</div>
+          <div className="stat-label">Approved Goals</div>
+          <div className="stat-trend neutral">Eligible for check-ins</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon green"><span>✅</span></div>
+          <div className="stat-number">{completedCheckins}</div>
+          <div className="stat-label">Completed</div>
+          <div className="stat-trend up">{selectedQuarter} Quarter</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon orange"><span>🔵</span></div>
+          <div className="stat-number">{onTrackCheckins}</div>
+          <div className="stat-label">On Track</div>
+          <div className="stat-trend neutral">In progress</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon red"><span>⚪</span></div>
+          <div className="stat-number">{goalsWithoutCheckins.length}</div>
+          <div className="stat-label">Pending Check-in</div>
+          <div className={`stat-trend ${goalsWithoutCheckins.length > 0 ? 'down' : 'up'}`}>
+            {goalsWithoutCheckins.length > 0 ? 'Action needed' : 'All done!'}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Card */}
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <h2 className="card-modern-title">📋 Quarterly Check-ins</h2>
           <Select
             value={selectedQuarter}
             onChange={setSelectedQuarter}
-            style={{ width: 120 }}
+            style={{ width: 150 }}
+            size="large"
           >
             <Option value="Q1">Q1 (July)</Option>
             <Option value="Q2">Q2 (October)</Option>
             <Option value="Q3">Q3 (January)</Option>
             <Option value="Q4">Q4 (March/April)</Option>
           </Select>
-        }
-      >
-        {goalsWithoutCheckins.length > 0 && (
-          <div style={{ marginBottom: 16, padding: 16, background: '#e6f7ff', borderRadius: 8 }}>
-            <strong>Goals pending check-in for {selectedQuarter}:</strong>
-            <div style={{ marginTop: 8 }}>
-              {goalsWithoutCheckins.map(goal => (
-                <div key={goal.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                  <span>{goal.title}</span>
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => handleAddCheckin(goal)}
-                  >
-                    Add Check-in
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
 
-        <Table
-          columns={columns}
-          dataSource={checkins}
-          rowKey="id"
-          loading={checkinsLoading}
-          pagination={false}
-        />
-      </Card>
+        <div className="card-modern-body">
+          {/* Pending check-ins alert */}
+          {goalsWithoutCheckins.length > 0 && (
+            <div style={{
+              marginBottom: 20,
+              padding: '16px 20px',
+              background: '#eff6ff',
+              borderRadius: 10,
+              border: '1px solid #bfdbfe',
+            }}>
+              <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: 12 }}>
+                📌 Goals pending check-in for {selectedQuarter}:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {goalsWithoutCheckins.map(goal => (
+                  <div key={goal.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 14px',
+                    background: 'white',
+                    borderRadius: 8,
+                    border: '1px solid #e0e7ff',
+                  }}>
+                    <span style={{ fontWeight: 500, color: '#374151' }}>{goal.title}</span>
+                    <Button
+                      size="small"
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => handleAddCheckin(goal)}
+                      style={{ borderRadius: 6, fontWeight: 600 }}
+                    >
+                      Add Check-in
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Check-ins Table */}
+          <Table
+            className="table-enhanced"
+            columns={columns}
+            dataSource={checkins}
+            rowKey="id"
+            loading={checkinsLoading}
+            pagination={false}
+            style={{ borderRadius: 10, overflow: 'hidden' }}
+          />
+        </div>
+      </div>
 
       {/* Check-in Modal */}
       <Modal

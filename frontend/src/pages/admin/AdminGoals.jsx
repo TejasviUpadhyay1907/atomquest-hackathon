@@ -116,13 +116,14 @@ const AdminGoals = () => {
       key: 'status',
       width: 150,
       render: (status) => {
-        const colors = {
-          'Draft': 'default',
-          'Pending Approval': 'processing',
-          'Approved': 'success',
-          'Rejected': 'error',
+        const styleMap = {
+          'Draft':            { background: '#f3f4f6', color: '#374151' },
+          'Pending Approval': { background: '#fef3c7', color: '#92400e' },
+          'Approved':         { background: '#d1fae5', color: '#065f46' },
+          'Rejected':         { background: '#fee2e2', color: '#991b1b' },
         };
-        return <Tag color={colors[status]}>{status}</Tag>;
+        const s = styleMap[status] || styleMap['Draft'];
+        return <span className="status-badge" style={s}>{status}</span>;
       },
     },
     {
@@ -171,77 +172,73 @@ const AdminGoals = () => {
 
   return (
     <div>
-      <Card title="All Goals">
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginBottom: 24 }}>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>{stats.total}</div>
-            <div style={{ color: '#666' }}>Total Goals</div>
-          </Card>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>{stats.approved}</div>
-            <div style={{ color: '#666' }}>Approved</div>
-          </Card>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#faad14' }}>{stats.pending}</div>
-            <div style={{ color: '#666' }}>Pending</div>
-          </Card>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#ff4d4f' }}>{stats.rejected}</div>
-            <div style={{ color: '#666' }}>Rejected</div>
-          </Card>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#722ed1' }}>{stats.locked}</div>
-            <div style={{ color: '#666' }}>Locked</div>
-          </Card>
-          <Card size="small">
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#13c2c2' }}>{stats.shared}</div>
-            <div style={{ color: '#666' }}>Shared</div>
-          </Card>
+      {/* Summary Cards */}
+      <div className="summary-cards-row">
+        <div className="metric-card">
+          <div className="metric-card-icon blue"><span>🎯</span></div>
+          <div className="stat-number">{stats.total}</div>
+          <div className="stat-label">Total Goals</div>
+          <div className="stat-trend neutral">All employees</div>
         </div>
+        <div className="metric-card">
+          <div className="metric-card-icon green"><span>✅</span></div>
+          <div className="stat-number">{stats.approved}</div>
+          <div className="stat-label">Approved</div>
+          <div className="stat-trend up">Active goals</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon orange"><span>⏳</span></div>
+          <div className="stat-number">{stats.pending}</div>
+          <div className="stat-label">Pending</div>
+          <div className="stat-trend neutral">Awaiting approval</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon red"><span>🔒</span></div>
+          <div className="stat-number">{stats.locked}</div>
+          <div className="stat-label">Locked</div>
+          <div className="stat-trend neutral">{stats.shared} shared</div>
+        </div>
+      </div>
 
-        {/* Filters */}
-        <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between' }}>
+      {/* Main Card */}
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <h2 className="card-modern-title">🎯 All Goals</h2>
           <Space>
-            <Search
+            <Input
+              prefix={<SearchOutlined />}
               placeholder="Search goals..."
               allowClear
-              style={{ width: 250 }}
+              style={{ width: 220, borderRadius: 8 }}
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              style={{ width: 150 }}
-            >
+            <Select value={statusFilter} onChange={setStatusFilter} style={{ width: 150 }}>
               <Option value="all">All Status</Option>
               <Option value="Draft">Draft</Option>
               <Option value="Pending Approval">Pending</Option>
               <Option value="Approved">Approved</Option>
               <Option value="Rejected">Rejected</Option>
             </Select>
-            <Select
-              value={departmentFilter}
-              onChange={setDepartmentFilter}
-              style={{ width: 150 }}
-            >
+            <Select value={departmentFilter} onChange={setDepartmentFilter} style={{ width: 150 }}>
               <Option value="all">All Departments</Option>
               {departments.map(dept => (
                 <Option key={dept} value={dept}>{dept}</Option>
               ))}
             </Select>
           </Space>
-        </Space>
-
-        <Table
-          columns={columns}
-          dataSource={filteredGoals}
-          rowKey="id"
-          loading={isLoading}
-          scroll={{ x: 1400 }}
-          pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total) => `Total ${total} goals` }}
-        />
-      </Card>
+        </div>
+        <div className="card-modern-body" style={{ padding: 0 }}>
+          <Table
+            className="table-enhanced"
+            columns={columns}
+            dataSource={filteredGoals}
+            rowKey="id"
+            loading={isLoading}
+            scroll={{ x: 1400 }}
+            pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total) => `Total ${total} goals` }}
+          />
+        </div>
+      </div>
     </div>
   );
 };

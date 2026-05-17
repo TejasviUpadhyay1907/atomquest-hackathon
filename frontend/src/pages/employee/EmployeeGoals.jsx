@@ -164,6 +164,11 @@ const EmployeeGoals = () => {
     });
   };
 
+  const draftCount = goals.filter(g => g.status === 'Draft').length;
+  const approvedCount = goals.filter(g => g.status === 'Approved').length;
+  const pendingCount = goals.filter(g => g.status === 'Pending Approval').length;
+  const rejectedCount = goals.filter(g => g.status === 'Rejected').length;
+
   const columns = [
     {
       title: 'Title',
@@ -196,13 +201,22 @@ const EmployeeGoals = () => {
       key: 'status',
       width: 150,
       render: (status) => {
-        const colors = {
-          'Draft': 'default',
-          'Pending Approval': 'processing',
-          'Approved': 'success',
-          'Rejected': 'error',
+        const styleMap = {
+          'Draft':            { background: '#f3f4f6', color: '#374151' },
+          'Pending Approval': { background: '#fef3c7', color: '#92400e' },
+          'Approved':         { background: '#d1fae5', color: '#065f46' },
+          'Rejected':         { background: '#fee2e2', color: '#991b1b' },
         };
-        return <Tag color={colors[status]}>{status}</Tag>;
+        const s = styleMap[status] || styleMap['Draft'];
+        return (
+          <span className="status-badge" style={s}>
+            {status === 'Approved' && '✅ '}
+            {status === 'Rejected' && '❌ '}
+            {status === 'Pending Approval' && '⏳ '}
+            {status === 'Draft' && '📝 '}
+            {status}
+          </span>
+        );
       },
     },
     {
@@ -253,64 +267,116 @@ const EmployeeGoals = () => {
 
   return (
     <div>
-      <Card
-        title="My Goals"
-        extra={
+      {/* Summary Cards */}
+      <div className="summary-cards-row">
+        <div className="metric-card">
+          <div className="metric-card-icon blue"><span>🎯</span></div>
+          <div className="stat-number">{goals.length}</div>
+          <div className="stat-label">Total Goals</div>
+          <div className="stat-trend neutral">{goals.length} / 8 max</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon green"><span>✅</span></div>
+          <div className="stat-number">{approvedCount}</div>
+          <div className="stat-label">Approved</div>
+          <div className="stat-trend up">Ready for check-ins</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon orange"><span>⏳</span></div>
+          <div className="stat-number">{pendingCount}</div>
+          <div className="stat-label">Pending Approval</div>
+          <div className="stat-trend neutral">Awaiting review</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon blue" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <span>📊</span>
+          </div>
+          <div className="stat-number">{validation.total_weightage || 0}%</div>
+          <div className="stat-label">Total Weightage</div>
+          <div className={`stat-trend ${validation.total_weightage === 100 ? 'up' : 'neutral'}`}>
+            {validation.total_weightage === 100 ? '✅ Ready to submit' : `${100 - (validation.total_weightage || 0)}% remaining`}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Card */}
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <h2 className="card-modern-title">🎯 My Goals</h2>
           <Space>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={handleCreate}
               disabled={goals.length >= 8}
+              style={{ borderRadius: 8, fontWeight: 600 }}
             >
               Create Goal
             </Button>
             <Button
-              type="default"
               icon={<SendOutlined />}
               onClick={handleSubmitAll}
               disabled={!validation.can_submit}
+              style={{ borderRadius: 8, fontWeight: 600 }}
             >
               Submit All
             </Button>
           </Space>
-        }
-      >
-        {/* Validation Status */}
-        <div style={{ marginBottom: 16, padding: 16, background: '#f5f5f5', borderRadius: 8 }}>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span><strong>Total Weightage:</strong></span>
-              <Progress
-                percent={validation.total_weightage || 0}
-                status={validation.total_weightage === 100 ? 'success' : 'active'}
-                style={{ width: 200 }}
-              />
-            </div>
-            <div>
-              <strong>Goals:</strong> {validation.goal_count || 0} / 8
-            </div>
-            {validation.errors && validation.errors.length > 0 && (
-              <div style={{ color: '#ff4d4f' }}>
-                <strong>Issues:</strong>
-                <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
-                  {validation.errors.map((error, idx) => (
-                    <li key={idx}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </Space>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={goals}
-          rowKey="id"
-          loading={isLoading}
-          pagination={false}
-        />
-      </Card>
+        <div className="card-modern-body">
+          {/* Validation Status Bar */}
+          <div style={{
+            marginBottom: 20,
+            padding: '16px 20px',
+            background: validation.total_weightage === 100 ? '#f0fdf4' : '#fefce8',
+            borderRadius: 10,
+            border: `1px solid ${validation.total_weightage === 100 ? '#bbf7d0' : '#fde68a'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            flexWrap: 'wrap',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 200 }}>
+              <span style={{ fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>Total Weightage:</span>
+              <div style={{ flex: 1 }}>
+                <Progress
+                  percent={validation.total_weightage || 0}
+                  status={validation.total_weightage === 100 ? 'success' : 'active'}
+                  strokeColor={validation.total_weightage === 100 ? '#10b981' : '#667eea'}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 600, color: '#374151' }}>
+                Goals: <span style={{ color: '#667eea' }}>{validation.goal_count || 0} / 8</span>
+              </span>
+              <span style={{ fontWeight: 600, color: '#374151' }}>
+                Draft: <span style={{ color: '#f59e0b' }}>{draftCount}</span>
+              </span>
+              <span style={{ fontWeight: 600, color: '#374151' }}>
+                Rejected: <span style={{ color: '#ef4444' }}>{rejectedCount}</span>
+              </span>
+            </div>
+            {validation.errors && validation.errors.length > 0 && (
+              <div style={{ width: '100%', color: '#dc2626', fontSize: 13 }}>
+                ⚠️ {validation.errors.join(' • ')}
+              </div>
+            )}
+          </div>
+
+          {/* Goals Table */}
+          <Table
+            className="table-enhanced"
+            columns={columns}
+            dataSource={goals}
+            rowKey="id"
+            loading={isLoading}
+            pagination={false}
+            style={{ borderRadius: 10, overflow: 'hidden' }}
+          />
+        </div>
+      </div>
 
       {/* Create/Edit Modal */}
       <Modal

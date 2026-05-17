@@ -193,57 +193,118 @@ const ManagerApprovals = () => {
 
   return (
     <div>
-      <Card title="Pending Approvals">
-        {Object.entries(groupedGoals).map(([employeeId, data]) => {
-          const totalWeightage = data.goals.reduce((sum, g) => sum + g.weightage, 0);
-          const isValid = totalWeightage === 100 && data.goals.length <= 8;
-
-          return (
-            <Card
-              key={employeeId}
-              type="inner"
-              title={
-                <Space>
-                  <span>{data.employeeName}</span>
-                  <Tag color={isValid ? 'success' : 'warning'}>
-                    {data.goals.length} goals | {totalWeightage}% total
-                  </Tag>
-                </Space>
-              }
-              extra={
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => handleApproveAll(parseInt(employeeId), data.employeeName)}
-                  disabled={!isValid}
-                >
-                  Approve All
-                </Button>
-              }
-              style={{ marginBottom: 16 }}
-            >
-              {!isValid && (
-                <div style={{ marginBottom: 16, padding: 12, background: '#fff7e6', borderRadius: 8, color: '#fa8c16' }}>
-                  ⚠️ Total weightage must equal 100% and max 8 goals before approval
-                </div>
-              )}
-              <Table
-                columns={columns}
-                dataSource={data.goals}
-                rowKey="id"
-                pagination={false}
-                size="small"
-              />
-            </Card>
-          );
-        })}
-
-        {approvals.length === 0 && !isLoading && (
-          <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-            No pending approvals
+      {/* Summary Cards */}
+      <div className="summary-cards-row">
+        <div className="metric-card">
+          <div className="metric-card-icon orange"><span>⏳</span></div>
+          <div className="stat-number">{approvals.length}</div>
+          <div className="stat-label">Pending Approvals</div>
+          <div className="stat-trend neutral">Awaiting review</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon blue"><span>👥</span></div>
+          <div className="stat-number">{Object.keys(groupedGoals).length}</div>
+          <div className="stat-label">Employees</div>
+          <div className="stat-trend neutral">With pending goals</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon green"><span>✅</span></div>
+          <div className="stat-number">
+            {Object.values(groupedGoals).filter(d => {
+              const tw = d.goals.reduce((s, g) => s + g.weightage, 0);
+              return tw === 100 && d.goals.length <= 8;
+            }).length}
           </div>
-        )}
-      </Card>
+          <div className="stat-label">Ready to Approve</div>
+          <div className="stat-trend up">Valid submissions</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-card-icon red"><span>⚠️</span></div>
+          <div className="stat-number">
+            {Object.values(groupedGoals).filter(d => {
+              const tw = d.goals.reduce((s, g) => s + g.weightage, 0);
+              return tw !== 100 || d.goals.length > 8;
+            }).length}
+          </div>
+          <div className="stat-label">Need Attention</div>
+          <div className="stat-trend down">Invalid weightage</div>
+        </div>
+      </div>
+
+      {/* Main Card */}
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <h2 className="card-modern-title">⏳ Pending Approvals</h2>
+        </div>
+        <div className="card-modern-body">
+          {Object.entries(groupedGoals).map(([employeeId, data]) => {
+            const totalWeightage = data.goals.reduce((sum, g) => sum + g.weightage, 0);
+            const isValid = totalWeightage === 100 && data.goals.length <= 8;
+
+            return (
+              <div key={employeeId} style={{
+                marginBottom: 20,
+                border: `1px solid ${isValid ? '#bbf7d0' : '#fde68a'}`,
+                borderRadius: 12,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  padding: '14px 20px',
+                  background: isValid ? '#f0fdf4' : '#fefce8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <Space>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'white', fontWeight: 700, fontSize: 16,
+                    }}>
+                      {data.employeeName.charAt(0)}
+                    </div>
+                    <span style={{ fontWeight: 600, fontSize: 16 }}>{data.employeeName}</span>
+                    <span className={`status-badge ${isValid ? 'success' : 'warning'}`}>
+                      {data.goals.length} goals | {totalWeightage}% total
+                    </span>
+                  </Space>
+                  <Button
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    onClick={() => handleApproveAll(parseInt(employeeId), data.employeeName)}
+                    disabled={!isValid}
+                    style={{ borderRadius: 8, fontWeight: 600 }}
+                  >
+                    Approve All
+                  </Button>
+                </div>
+                {!isValid && (
+                  <div style={{ padding: '10px 20px', background: '#fffbeb', color: '#92400e', fontSize: 13 }}>
+                    ⚠️ Total weightage must equal 100% and max 8 goals before approval
+                  </div>
+                )}
+                <Table
+                  className="table-enhanced"
+                  columns={columns}
+                  dataSource={data.goals}
+                  rowKey="id"
+                  pagination={false}
+                  size="small"
+                />
+              </div>
+            );
+          })}
+
+          {approvals.length === 0 && !isLoading && (
+            <div className="empty-state">
+              <div className="empty-state-icon">✅</div>
+              <div className="empty-state-title">All caught up!</div>
+              <div className="empty-state-description">No pending approvals at this time</div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Edit Modal */}
       <Modal
