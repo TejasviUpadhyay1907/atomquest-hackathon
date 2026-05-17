@@ -145,7 +145,54 @@ const AdminAuditLogs = () => {
 
   return (
     <div>
-      <Card title="Audit Logs">
+      {/* Metric Cards */}
+      <div className="metrics-grid" style={{ marginBottom: 24 }}>
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            📋
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Total Logs</div>
+            <div className="metric-value">{filteredLogs.length}</div>
+            <div className="metric-trend neutral">All audit entries</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+            ✅
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Approvals</div>
+            <div className="metric-value">{filteredLogs.filter(l => l.action.includes('Approved')).length}</div>
+            <div className="metric-trend up">Goals approved</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
+            ❌
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Rejections</div>
+            <div className="metric-value">{filteredLogs.filter(l => l.action.includes('Rejected')).length}</div>
+            <div className="metric-trend down">Goals rejected</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+            🔓
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Unlocks</div>
+            <div className="metric-value">{filteredLogs.filter(l => l.action.includes('Unlocked')).length}</div>
+            <div className="metric-trend neutral">Admin unlocks</div>
+          </div>
+        </div>
+      </div>
+
+      <Card title="Audit Logs" className="modern-card">
         {/* Filters */}
         <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <Space wrap>
@@ -199,17 +246,6 @@ const AdminAuditLogs = () => {
           </Space>
         </Space>
 
-        {/* Stats */}
-        <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 8 }}>
-          <Space size="large">
-            <span><strong>Total Logs:</strong> {filteredLogs.length}</span>
-            <span><strong>Approvals:</strong> {filteredLogs.filter(l => l.action.includes('Approved')).length}</span>
-            <span><strong>Rejections:</strong> {filteredLogs.filter(l => l.action.includes('Rejected')).length}</span>
-            <span><strong>Unlocks:</strong> {filteredLogs.filter(l => l.action.includes('Unlocked')).length}</span>
-            <span><strong>Edits:</strong> {filteredLogs.filter(l => l.action.includes('edited')).length}</span>
-          </Space>
-        </div>
-
         <Table
           columns={columns}
           dataSource={filteredLogs}
@@ -217,6 +253,7 @@ const AdminAuditLogs = () => {
           loading={isLoading}
           scroll={{ x: 1200 }}
           pagination={{ pageSize: 50, showSizeChanger: true, showTotal: (total) => `Total ${total} logs` }}
+          className="enhanced-table"
         />
       </Card>
     </div>

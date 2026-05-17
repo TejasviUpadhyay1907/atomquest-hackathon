@@ -164,6 +164,55 @@ const ManagerTeamCheckins = () => {
 
   return (
     <div>
+      {/* Metric Cards */}
+      <div className="metrics-grid" style={{ marginBottom: 24 }}>
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            📊
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Total Check-ins</div>
+            <div className="metric-value">{checkins.length}</div>
+            <div className="metric-trend neutral">{selectedQuarter}</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+            ✅
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Completed</div>
+            <div className="metric-value">{checkins.filter(c => c.status === 'Completed').length}</div>
+            <div className="metric-trend up">
+              {checkins.length > 0 ? Math.round((checkins.filter(c => c.status === 'Completed').length / checkins.length) * 100) : 0}% done
+            </div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }}>
+            🎯
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">On Track</div>
+            <div className="metric-value">{checkins.filter(c => c.status === 'On Track').length}</div>
+            <div className="metric-trend neutral">In progress</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+            👥
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Team Members</div>
+            <div className="metric-value">{Object.keys(employeeStats).length}</div>
+            <div className="metric-trend neutral">Active employees</div>
+          </div>
+        </div>
+      </div>
+
       <Card
         title="Team Check-ins"
         extra={
@@ -178,17 +227,18 @@ const ManagerTeamCheckins = () => {
             <Option value="Q4">Q4 (March/April)</Option>
           </Select>
         }
+        className="modern-card"
       >
         {/* Summary Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
           {Object.values(employeeStats).map((stat, idx) => (
-            <Card key={idx} size="small">
-              <div style={{ fontWeight: 'bold', marginBottom: 8 }}>{stat.name}</div>
+            <Card key={idx} size="small" className="employee-summary-card">
+              <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>{stat.name}</div>
               <div style={{ fontSize: 12, color: '#666' }}>
-                <div>Total: {stat.total}</div>
-                <div style={{ color: '#52c41a' }}>Completed: {stat.completed}</div>
-                <div style={{ color: '#1890ff' }}>On Track: {stat.onTrack}</div>
-                <div style={{ color: '#999' }}>Not Started: {stat.notStarted}</div>
+                <div style={{ marginBottom: 4 }}>Total: <strong>{stat.total}</strong></div>
+                <div style={{ color: '#52c41a', marginBottom: 4 }}>✅ Completed: <strong>{stat.completed}</strong></div>
+                <div style={{ color: '#1890ff', marginBottom: 4 }}>🎯 On Track: <strong>{stat.onTrack}</strong></div>
+                <div style={{ color: '#999' }}>⏳ Not Started: <strong>{stat.notStarted}</strong></div>
               </div>
             </Card>
           ))}
@@ -201,6 +251,7 @@ const ManagerTeamCheckins = () => {
           loading={isLoading}
           scroll={{ x: 1200 }}
           pagination={{ pageSize: 20 }}
+          className="enhanced-table"
         />
       </Card>
 
@@ -216,10 +267,10 @@ const ManagerTeamCheckins = () => {
         width={600}
       >
         {selectedCheckin && (
-          <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 8 }}>
-            <div><strong>Employee:</strong> {selectedCheckin.employee_name}</div>
-            <div><strong>Goal:</strong> {selectedCheckin.goal_title}</div>
-            <div><strong>Quarter:</strong> {selectedCheckin.quarter}</div>
+          <div style={{ marginBottom: 16, padding: 12, background: '#f5f7fa', borderRadius: 8 }}>
+            <div style={{ marginBottom: 8 }}><strong>Employee:</strong> {selectedCheckin.employee_name}</div>
+            <div style={{ marginBottom: 8 }}><strong>Goal:</strong> {selectedCheckin.goal_title}</div>
+            <div style={{ marginBottom: 8 }}><strong>Quarter:</strong> {selectedCheckin.quarter}</div>
             <div><strong>Progress:</strong> {selectedCheckin.progress_score ? `${Math.round(selectedCheckin.progress_score)}%` : 'N/A'}</div>
           </div>
         )}

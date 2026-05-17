@@ -113,7 +113,54 @@ const AdminSharedGoals = () => {
 
   return (
     <div>
-      <Card title="Create Shared Goal" style={{ marginBottom: 24 }}>
+      {/* Metric Cards */}
+      <div className="metrics-grid" style={{ marginBottom: 24 }}>
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            🎯
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Shared Goals</div>
+            <div className="metric-value">{sharedGoals.filter(g => g.primary_owner_id !== null).length}</div>
+            <div className="metric-trend neutral">Total created</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+            ✅
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Approved</div>
+            <div className="metric-value">{sharedGoals.filter(g => g.status === 'Approved').length}</div>
+            <div className="metric-trend up">Active goals</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+            ⏳
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Pending</div>
+            <div className="metric-value">{sharedGoals.filter(g => g.status === 'Pending Approval').length}</div>
+            <div className="metric-trend neutral">Awaiting approval</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
+            👥
+          </div>
+          <div className="metric-content">
+            <div className="metric-label">Employees</div>
+            <div className="metric-value">{employees.length}</div>
+            <div className="metric-trend neutral">Available to assign</div>
+          </div>
+        </div>
+      </div>
+
+      <Card title="Create Shared Goal" style={{ marginBottom: 24 }} className="modern-card">
         <Form
           form={form}
           layout="vertical"
@@ -223,12 +270,13 @@ const AdminSharedGoals = () => {
         </Form>
       </Card>
 
-      <Card title="Existing Shared Goals">
+      <Card title="Existing Shared Goals" className="modern-card">
         <Table
           columns={columns}
           dataSource={sharedGoals.filter(g => g.primary_owner_id !== null)}
           rowKey="id"
           pagination={false}
+          className="enhanced-table"
         />
       </Card>
     </div>
