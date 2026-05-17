@@ -40,6 +40,13 @@ const AnalyticsDashboard = () => {
   const completion = completionData?.data || {};
   const achievements = achievementData?.data || [];
 
+  // Debug logging
+  console.log('📊 Analytics Dashboard Data:');
+  console.log('Distribution:', distribution);
+  console.log('Status Overview:', statusOverview);
+  console.log('Completion:', completion);
+  console.log('Achievements:', achievements);
+
   // Process data for charts
   const goalDistributionData = distribution.map(item => ({
     name: item.thrust_area,
