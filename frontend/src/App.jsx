@@ -43,8 +43,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   if (loading) {
     return <LoadingSpinner />;
   }
-    );
-  }
 
   if (!user) {
     return <Navigate to="/login" replace />;

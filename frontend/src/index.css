@@ -1,12 +1,14 @@
+/* Import Inter font - MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Import Inter font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-/* Modern UI Styles for AtomQuest Goal Tracking Portal */
+/* ============================================================
+   AtomQuest Goal Tracking Portal - Modern UI Styles
+   ============================================================ */
 
 /* CSS Custom Properties (Variables) for theming */
 :root {
@@ -18,13 +20,15 @@
   --text-primary: #262626;
   --text-secondary: #8c8c8c;
   --background-light: #f5f7fa;
-  --border-color: rgba(0,0,0,0.06);
-  --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-medium: 0 4px 16px rgba(0,0,0,0.12);
+  --border-color: rgba(0, 0, 0, 0.06);
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
   --transition: all 0.3s ease;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Base Reset */
 * {
   margin: 0;
   padding: 0;
@@ -32,55 +36,74 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--background-light);
+  color: var(--text-primary);
   line-height: 1.6;
 }
 
-/* Responsive Design - Mobile First */
+/* ============================================================
+   RESPONSIVE DESIGN - Mobile First with @media queries
+   ============================================================ */
+
+/* Mobile */
 @media (max-width: 768px) {
   body {
     font-size: 14px;
   }
-  
+
   .ant-card {
     margin: 8px !important;
   }
-  
+
   .ant-table {
     font-size: 12px !important;
   }
-  
+
   .page-title {
-    font-size: 24px !important;
+    font-size: 20px !important;
+  }
+
+  .grid-2-cols,
+  .grid-3-cols,
+  .grid-4-cols {
+    grid-template-columns: 1fr;
   }
 }
 
+/* Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .ant-card {
     margin: 12px !important;
   }
-  
+
   .page-title {
-    font-size: 26px !important;
+    font-size: 24px !important;
+  }
+
+  .grid-3-cols,
+  .grid-4-cols {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* Desktop */
 @media (min-width: 1025px) {
   .ant-card {
     margin: 16px !important;
   }
-  
+
   .page-title {
     font-size: 28px !important;
   }
 }
 
-/* Flexbox Layouts */
+/* ============================================================
+   FLEXBOX LAYOUTS
+   ============================================================ */
+
 .flex-container {
   display: flex;
   gap: 16px;
@@ -107,40 +130,41 @@ body {
   flex-wrap: wrap;
 }
 
-/* CSS Grid Layouts */
+.flex-1 {
+  flex: 1;
+}
+
+/* ============================================================
+   CSS GRID LAYOUTS
+   ============================================================ */
+
 .grid-container {
   display: grid;
   gap: 16px;
 }
 
 .grid-2-cols {
+  display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .grid-3-cols {
+  display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
 .grid-4-cols {
+  display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
-@media (max-width: 768px) {
-  .grid-2-cols,
-  .grid-3-cols,
-  .grid-4-cols {
-    grid-template-columns: 1fr;
-  }
-}
+/* ============================================================
+   MODERN CARD STYLES
+   ============================================================ */
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .grid-3-cols,
-  .grid-4-cols {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Modern Card Styles */
 .ant-card {
   border-radius: var(--border-radius) !important;
   box-shadow: var(--shadow-light) !important;
@@ -159,17 +183,20 @@ body {
   font-weight: 600 !important;
 }
 
-/* Modern Button Styles */
+/* ============================================================
+   MODERN BUTTON STYLES
+   ============================================================ */
+
 .ant-btn-primary {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(102,126,234,0.3) !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
   transition: var(--transition) !important;
 }
 
 .ant-btn-primary:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(102,126,234,0.5) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5) !important;
 }
 
 .ant-btn {
@@ -178,7 +205,10 @@ body {
   transition: var(--transition) !important;
 }
 
-/* Modern Table Styles */
+/* ============================================================
+   MODERN TABLE STYLES
+   ============================================================ */
+
 .ant-table {
   border-radius: var(--border-radius) !important;
   overflow: hidden !important;
@@ -192,14 +222,17 @@ body {
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: rgba(102,126,234,0.05) !important;
+  background: rgba(102, 126, 234, 0.05) !important;
 }
 
 .ant-table-tbody > tr > td {
   border-bottom: 1px solid var(--border-color) !important;
 }
 
-/* Modern Modal Styles */
+/* ============================================================
+   MODERN MODAL STYLES
+   ============================================================ */
+
 .ant-modal-content {
   border-radius: var(--border-radius) !important;
   overflow: hidden !important;
@@ -219,13 +252,16 @@ body {
   color: white !important;
 }
 
-/* Modern Input Styles */
+/* ============================================================
+   MODERN INPUT STYLES
+   ============================================================ */
+
 .ant-input,
 .ant-input-password,
 .ant-select-selector,
 .ant-picker {
   border-radius: 8px !important;
-  border: 1px solid rgba(0,0,0,0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
   transition: var(--transition) !important;
 }
 
@@ -234,10 +270,13 @@ body {
 .ant-select-focused .ant-select-selector,
 .ant-picker-focused {
   border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 2px rgba(102,126,234,0.1) !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
 }
 
-/* Modern Tag Styles */
+/* ============================================================
+   MODERN TAG & BADGE STYLES
+   ============================================================ */
+
 .ant-tag {
   border-radius: 6px !important;
   padding: 4px 12px !important;
@@ -245,30 +284,19 @@ body {
   border: none !important;
 }
 
-/* Modern Progress Bar */
 .ant-progress-bg {
   background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
 }
 
-/* Modern Badge */
 .ant-badge-count {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-  box-shadow: 0 2px 8px rgba(245,87,108,0.4) !important;
+  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4) !important;
 }
 
-/* Modern Notification */
-.ant-notification-notice {
-  border-radius: var(--border-radius) !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
-}
+/* ============================================================
+   SMOOTH ANIMATIONS & KEYFRAMES
+   ============================================================ */
 
-/* Modern Message */
-.ant-message-notice-content {
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-}
-
-/* Smooth Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -300,6 +328,15 @@ body {
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .fade-in {
   animation: fadeIn 0.5s ease-out;
 }
@@ -312,7 +349,10 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* Custom Scrollbar */
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -332,7 +372,10 @@ body {
   background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
 }
 
-/* Page Title Styles */
+/* ============================================================
+   PAGE TITLE & TYPOGRAPHY
+   ============================================================ */
+
 .page-title {
   font-size: 28px;
   font-weight: 700;
@@ -343,13 +386,15 @@ body {
   margin-bottom: 24px;
 }
 
-/* Card with Gradient Border */
+/* ============================================================
+   CARD VARIANTS
+   ============================================================ */
+
 .gradient-border-card {
   position: relative;
-  background: white;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   border-radius: var(--border-radius);
   padding: 2px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
 }
 
 .gradient-border-card-inner {
@@ -358,17 +403,19 @@ body {
   padding: 24px;
 }
 
-/* Hover Effects */
 .hover-lift {
   transition: var(--transition);
 }
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* Status Colors */
+/* ============================================================
+   STATUS COLORS
+   ============================================================ */
+
 .status-draft {
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
   color: #666;
@@ -389,17 +436,10 @@ body {
   color: #dc143c;
 }
 
-/* Loading Spinner */
-.ant-spin-dot-item {
-  background-color: var(--primary-color) !important;
-}
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
 
-/* Empty State */
-.ant-empty-description {
-  color: #999 !important;
-}
-
-/* Utility Classes */
 .text-center { text-align: center; }
 .text-left { text-align: left; }
 .text-right { text-align: right; }
@@ -418,17 +458,46 @@ body {
 .w-full { width: 100%; }
 .h-full { height: 100%; }
 
-/* Dark mode support */
+.rounded { border-radius: var(--border-radius); }
+.shadow { box-shadow: var(--shadow-light); }
+.shadow-md { box-shadow: var(--shadow-medium); }
+
+/* ============================================================
+   DARK MODE SUPPORT
+   ============================================================ */
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background-light: #1f1f1f;
     --text-primary: #ffffff;
     --text-secondary: #cccccc;
-    --border-color: rgba(255,255,255,0.1);
+    --border-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   body {
     background: var(--background-light);
     color: var(--text-primary);
   }
+}
+
+/* ============================================================
+   NOTIFICATION & MESSAGE STYLES
+   ============================================================ */
+
+.ant-notification-notice {
+  border-radius: var(--border-radius) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.ant-message-notice-content {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.ant-spin-dot-item {
+  background-color: var(--primary-color) !important;
+}
+
+.ant-empty-description {
+  color: #999 !important;
 }
