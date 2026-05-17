@@ -53,6 +53,8 @@ class GoalResponse(BaseModel):
     description: Optional[str] = None
     uom_type: UoMType
     target: str
+    current_value: Optional[str] = "0"
+    progress: Optional[float] = 0.0
     weightage: float
     status: GoalStatus
     is_locked: bool

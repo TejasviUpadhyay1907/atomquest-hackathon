@@ -31,6 +31,8 @@ class Goal(Base):
     
     uom_type = Column(SQLEnum(UoMType), nullable=False)
     target = Column(String, nullable=False)  # Store as string to handle dates and numbers
+    current_value = Column(String, nullable=True, default="0")  # Current progress value
+    progress = Column(Float, nullable=True, default=0.0)  # Progress percentage (0-100)
     weightage = Column(Float, nullable=False)
     
     status = Column(SQLEnum(GoalStatus), nullable=False, default=GoalStatus.DRAFT)

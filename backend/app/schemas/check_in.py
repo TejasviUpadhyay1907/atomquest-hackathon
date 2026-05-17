@@ -25,9 +25,16 @@ class CheckInResponse(BaseModel):
     actual_achievement: Optional[str] = None
     status: CheckInStatus
     progress_score: Optional[float] = None
+    progress: Optional[float] = None  # Alias for progress_score for compatibility
     manager_comment: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     
     class Config:
         from_attributes = True
+        
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Set progress to progress_score if not set
+        if self.progress is None and self.progress_score is not None:
+            self.progress = self.progress_score
