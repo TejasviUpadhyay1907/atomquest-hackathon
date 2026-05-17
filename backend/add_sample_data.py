@@ -4,7 +4,7 @@
 from app.core.database import SessionLocal
 from app.models.user import User, UserRole
 from app.models.goal import Goal, GoalStatus
-from app.models.check_in import CheckIn, CheckInStatus
+from app.models.check_in import CheckIn, CheckInStatus, Quarter
 from app.models.thrust_area import ThrustArea
 from app.models.audit_log import AuditLog
 from datetime import datetime, timedelta
@@ -30,48 +30,62 @@ print("\n2️⃣ Adding sample check-ins...")
 goals = db.query(Goal).filter(Goal.user_id == emp1.id).limit(2).all()
 
 for i, goal in enumerate(goals):
-    # Add Q1 check-in
-    checkin = CheckIn(
-        goal_id=goal.id,
-        quarter="Q1",
-        planned_target=25,
-        actual_achievement=20,
-        progress_score=80,
-        status=CheckInStatus.SUBMITTED,
-        remarks="Good progress in Q1",
-        submitted_at=datetime.utcnow() - timedelta(days=30)
-    )
-    db.add(checkin)
-    print(f"   ✅ Added Q1 check-in for goal: {goal.title}")
+    # Check if check-in already exists
+    existing = db.query(CheckIn).filter(
+        CheckIn.goal_id == goal.id,
+        CheckIn.quarter == Quarter.Q1
+    ).first()
+    
+    if not existing:
+        # Add Q1 check-in
+        checkin = CheckIn(
+            goal_id=goal.id,
+            quarter=Quarter.Q1,
+            planned_target="25",
+            actual_achievement="20",
+            progress_score=80.0,
+            status=CheckInStatus.COMPLETED,
+            manager_comment="Good progress in Q1"
+        )
+        db.add(checkin)
+        print(f"   ✅ Added Q1 check-in for goal: {goal.title}")
+    else:
+        print(f"   ⏭️  Q1 check-in already exists for: {goal.title}")
 
 db.commit()
 
 # 3. Add sample audit logs
 print("\n3️⃣ Adding sample audit logs...")
 for goal in goals[:2]:
-    audit = AuditLog(
-        goal_id=goal.id,
-        user_id=emp1.id,
-        action="goal_created",
-        field_changed="status",
-        old_value="",
-        new_value="DRAFT",
-        timestamp=datetime.utcnow() - timedelta(days=45)
-    )
-    db.add(audit)
+    # Check if audit logs already exist
+    existing_count = db.query(AuditLog).filter(AuditLog.goal_id == goal.id).count()
     
-    audit2 = AuditLog(
-        goal_id=goal.id,
-        user_id=emp1.id,
-        action="goal_submitted",
-        field_changed="status",
-        old_value="DRAFT",
-        new_value="PENDING_APPROVAL",
-        timestamp=datetime.utcnow() - timedelta(days=40)
-    )
-    db.add(audit2)
-    
-    print(f"   ✅ Added audit logs for goal: {goal.title}")
+    if existing_count == 0:
+        audit = AuditLog(
+            goal_id=goal.id,
+            user_id=emp1.id,
+            action="goal_created",
+            field_changed="status",
+            old_value="",
+            new_value="DRAFT",
+            timestamp=datetime.utcnow() - timedelta(days=45)
+        )
+        db.add(audit)
+        
+        audit2 = AuditLog(
+            goal_id=goal.id,
+            user_id=emp1.id,
+            action="goal_submitted",
+            field_changed="status",
+            old_value="DRAFT",
+            new_value="PENDING_APPROVAL",
+            timestamp=datetime.utcnow() - timedelta(days=40)
+        )
+        db.add(audit2)
+        
+        print(f"   ✅ Added audit logs for goal: {goal.title}")
+    else:
+        print(f"   ⏭️  Audit logs already exist for: {goal.title}")
 
 db.commit()
 

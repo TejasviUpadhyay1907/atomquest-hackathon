@@ -188,3 +188,39 @@ def get_system_stats(
         "approved_goals": approved_goals,
         "draft_goals": draft_goals
     }
+
+
+@router.get("/audit-logs")
+def get_audit_logs(
+    goal_id: int = None,
+    user_id: int = None,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get audit logs (Admin only)"""
+    from app.models.audit_log import AuditLog
+    
+    query = db.query(AuditLog)
+    
+    if goal_id:
+        query = query.filter(AuditLog.goal_id == goal_id)
+    
+    if user_id:
+        query = query.filter(AuditLog.user_id == user_id)
+    
+    audit_logs = query.order_by(AuditLog.timestamp.desc()).limit(limit).all()
+    
+    return [
+        {
+            "id": log.id,
+            "goal_id": log.goal_id,
+            "user_id": log.user_id,
+            "action": log.action,
+            "field_changed": log.field_changed,
+            "old_value": log.old_value,
+            "new_value": log.new_value,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None
+        }
+        for log in audit_logs
+    ]

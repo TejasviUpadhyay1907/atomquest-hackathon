@@ -15,6 +15,62 @@ router = APIRouter()
 email_service = EmailService()
 
 
+@router.get("/team")
+def get_team_members(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_manager)
+):
+    """Get all team members for the manager"""
+    team_members = current_user.team_members
+    
+    return [
+        {
+            "id": member.id,
+            "email": member.email,
+            "full_name": member.full_name,
+            "department": member.department,
+            "role": str(member.role.value) if hasattr(member.role, 'value') else str(member.role)
+        }
+        for member in team_members
+    ]
+
+
+@router.get("/team-performance")
+def get_team_performance(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_manager)
+):
+    """Get performance metrics for the team"""
+    team_members = current_user.team_members
+    
+    performance_data = []
+    for member in team_members:
+        # Get member's goals
+        total_goals = db.query(Goal).filter(Goal.user_id == member.id).count()
+        approved_goals = db.query(Goal).filter(
+            Goal.user_id == member.id,
+            Goal.status == GoalStatus.APPROVED
+        ).count()
+        pending_goals = db.query(Goal).filter(
+            Goal.user_id == member.id,
+            Goal.status == GoalStatus.PENDING_APPROVAL
+        ).count()
+        
+        performance_data.append({
+            "employee_id": member.id,
+            "employee_name": member.full_name,
+            "total_goals": total_goals,
+            "approved_goals": approved_goals,
+            "pending_goals": pending_goals,
+            "completion_rate": round((approved_goals / total_goals * 100) if total_goals > 0 else 0, 2)
+        })
+    
+    return {
+        "team_size": len(team_members),
+        "performance": performance_data
+    }
+
+
 @router.get("/pending-approvals", response_model=List[GoalResponse])
 def get_pending_approvals(
     db: Session = Depends(get_db),

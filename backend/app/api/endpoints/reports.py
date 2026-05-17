@@ -15,6 +15,42 @@ from app.schemas.audit_log import AuditLogResponse
 router = APIRouter()
 
 
+@router.get("/goal-progress")
+def get_goal_progress(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get goal progress report"""
+    # Get goals based on role
+    if current_user.role == UserRole.ADMIN:
+        goals = db.query(Goal).all()
+    elif current_user.role == UserRole.MANAGER:
+        team_member_ids = [member.id for member in current_user.team_members]
+        goals = db.query(Goal).filter(Goal.user_id.in_(team_member_ids)).all()
+    else:
+        goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
+    
+    progress_data = []
+    for goal in goals:
+        # Get check-ins for this goal
+        check_ins = db.query(CheckIn).filter(CheckIn.goal_id == goal.id).all()
+        
+        progress_data.append({
+            "goal_id": goal.id,
+            "goal_title": goal.title,
+            "employee_name": goal.user.full_name,
+            "status": str(goal.status.value) if hasattr(goal.status, 'value') else str(goal.status),
+            "weightage": goal.weightage,
+            "check_ins_count": len(check_ins),
+            "avg_progress": round(sum(c.progress_score or 0 for c in check_ins) / len(check_ins), 2) if check_ins else 0
+        })
+    
+    return {
+        "total_goals": len(goals),
+        "goals": progress_data
+    }
+
+
 @router.get("/achievement-report")
 def get_achievement_report(
     quarter: str = None,
