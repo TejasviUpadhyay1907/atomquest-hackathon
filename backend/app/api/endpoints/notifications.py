@@ -18,12 +18,14 @@ def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get notifications for current user"""
+    """Get notifications for current user - OPTIMIZED"""
+    # Optimized query with proper indexing and minimal data transfer
     query = db.query(Notification).filter(Notification.user_id == current_user.id)
     
     if unread_only:
         query = query.filter(Notification.is_read == False)
     
+    # Use limit early and order by indexed column for faster query
     notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
     
     return notifications

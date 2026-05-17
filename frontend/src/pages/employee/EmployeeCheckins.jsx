@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Table, Button, Modal, Form, Input, Select, message, Tag, Progress } from 'antd';
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -14,20 +14,55 @@ const EmployeeCheckins = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  // Fetch approved goals
-  const { data: goalsData } = useQuery({
+  // Add error handling and logging
+  useEffect(() => {
+    console.log('EmployeeCheckins component mounted');
+  }, []);
+
+  // Fetch approved goals with error handling
+  const { data: goalsData, error: goalsError, isLoading: goalsLoading } = useQuery({
     queryKey: ['myGoals'],
-    queryFn: () => goalAPI.getMyGoals(),
+    queryFn: async () => {
+      console.log('Fetching goals...');
+      try {
+        const result = await goalAPI.getMyGoals();
+        console.log('Goals fetched successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error fetching goals:', error);
+        throw error;
+      }
+    },
   });
 
-  // Fetch check-ins
-  const { data: checkinsData, isLoading } = useQuery({
+  // Fetch check-ins with error handling
+  const { data: checkinsData, isLoading: checkinsLoading, error: checkinsError } = useQuery({
     queryKey: ['myCheckins', selectedQuarter],
-    queryFn: () => checkinAPI.getMyCheckins(selectedQuarter),
+    queryFn: async () => {
+      console.log('Fetching checkins for quarter:', selectedQuarter);
+      try {
+        const result = await checkinAPI.getMyCheckins(selectedQuarter);
+        console.log('Checkins fetched successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error fetching checkins:', error);
+        throw error;
+      }
+    },
   });
 
-  const goals = goalsData?.data?.filter(g => g.status === 'Approved') || [];
-  const checkins = checkinsData?.data || [];
+  // Safe data extraction with error handling
+  let goals = [];
+  let checkins = [];
+  
+  try {
+    goals = goalsData?.data?.filter(g => g.status === 'Approved') || [];
+    checkins = checkinsData?.data || [];
+    console.log('Processed data - Goals:', goals.length, 'Checkins:', checkins.length);
+  } catch (error) {
+    console.error('Error processing data:', error);
+    message.error('Error processing data. Please refresh the page.');
+  }
 
   // Create check-in mutation
   const createMutation = useMutation({
@@ -39,6 +74,7 @@ const EmployeeCheckins = () => {
       form.resetFields();
     },
     onError: (error) => {
+      console.error('Create checkin error:', error);
       message.error(error.response?.data?.detail || 'Failed to create check-in');
     },
   });
@@ -53,26 +89,39 @@ const EmployeeCheckins = () => {
       form.resetFields();
     },
     onError: (error) => {
+      console.error('Update checkin error:', error);
       message.error(error.response?.data?.detail || 'Failed to update check-in');
     },
   });
 
   const handleAddCheckin = (goal) => {
-    setSelectedGoal(goal);
-    form.setFieldsValue({
-      goal_id: goal.id,
-      quarter: selectedQuarter,
-    });
-    setIsModalOpen(true);
+    try {
+      console.log('Adding checkin for goal:', goal);
+      setSelectedGoal(goal);
+      form.setFieldsValue({
+        goal_id: goal.id,
+        quarter: selectedQuarter,
+      });
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error in handleAddCheckin:', error);
+      message.error('Error opening check-in form');
+    }
   };
 
   const handleSubmit = (values) => {
-    const existingCheckin = checkins.find(c => c.goal_id === values.goal_id && c.quarter === values.quarter);
-    
-    if (existingCheckin) {
-      updateMutation.mutate({ id: existingCheckin.id, data: values });
-    } else {
-      createMutation.mutate(values);
+    try {
+      console.log('Submitting checkin:', values);
+      const existingCheckin = checkins.find(c => c.goal_id === values.goal_id && c.quarter === values.quarter);
+      
+      if (existingCheckin) {
+        updateMutation.mutate({ id: existingCheckin.id, data: values });
+      } else {
+        createMutation.mutate(values);
+      }
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      message.error('Error submitting check-in');
     }
   };
 
@@ -83,14 +132,42 @@ const EmployeeCheckins = () => {
     return 'exception';
   };
 
+  // Show loading state
+  if (goalsLoading || checkinsLoading) {
+    return (
+      <Card title="Quarterly Check-ins" loading={true}>
+        <div>Loading check-ins...</div>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (goalsError || checkinsError) {
+    return (
+      <Card title="Quarterly Check-ins">
+        <div style={{ color: 'red', padding: 20 }}>
+          <h3>Error loading data:</h3>
+          <p>Goals Error: {goalsError?.message}</p>
+          <p>Checkins Error: {checkinsError?.message}</p>
+          <Button onClick={() => window.location.reload()}>Reload Page</Button>
+        </div>
+      </Card>
+    );
+  }
+
   const columns = [
     {
       title: 'Goal',
       dataIndex: 'goal_id',
       key: 'goal',
       render: (goalId) => {
-        const goal = goals.find(g => g.id === goalId);
-        return goal?.title || 'N/A';
+        try {
+          const goal = goals.find(g => g.id === goalId);
+          return goal?.title || 'N/A';
+        } catch (error) {
+          console.error('Error rendering goal:', error);
+          return 'Error';
+        }
       },
     },
     {
@@ -113,25 +190,37 @@ const EmployeeCheckins = () => {
       title: 'Progress',
       dataIndex: 'progress_score',
       key: 'progress_score',
-      render: (score) => score ? (
-        <Progress
-          percent={Math.round(score)}
-          status={getProgressColor(score)}
-          style={{ width: 120 }}
-        />
-      ) : '-',
+      render: (score) => {
+        try {
+          return score ? (
+            <Progress
+              percent={Math.round(score)}
+              status={getProgressColor(score)}
+              style={{ width: 120 }}
+            />
+          ) : '-';
+        } catch (error) {
+          console.error('Error rendering progress:', error);
+          return 'Error';
+        }
+      },
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       render: (status) => {
-        const colors = {
-          'Not Started': 'default',
-          'On Track': 'processing',
-          'Completed': 'success',
-        };
-        return <Tag color={colors[status]}>{status}</Tag>;
+        try {
+          const colors = {
+            'Not Started': 'default',
+            'On Track': 'processing',
+            'Completed': 'success',
+          };
+          return <Tag color={colors[status]}>{status}</Tag>;
+        } catch (error) {
+          console.error('Error rendering status:', error);
+          return status;
+        }
       },
     },
     {
@@ -144,33 +233,43 @@ const EmployeeCheckins = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => {
-        const goal = goals.find(g => g.id === record.goal_id);
-        return (
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setSelectedGoal(goal);
-              form.setFieldsValue({
-                goal_id: record.goal_id,
-                quarter: record.quarter,
-                actual_achievement: record.actual_achievement,
-                status: record.status,
-              });
-              setIsModalOpen(true);
-            }}
-          >
-            Update
-          </Button>
-        );
+        try {
+          const goal = goals.find(g => g.id === record.goal_id);
+          return (
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setSelectedGoal(goal);
+                form.setFieldsValue({
+                  goal_id: record.goal_id,
+                  quarter: record.quarter,
+                  actual_achievement: record.actual_achievement,
+                  status: record.status,
+                });
+                setIsModalOpen(true);
+              }}
+            >
+              Update
+            </Button>
+          );
+        } catch (error) {
+          console.error('Error rendering actions:', error);
+          return 'Error';
+        }
       },
     },
   ];
 
   // Goals without check-ins for selected quarter
-  const goalsWithoutCheckins = goals.filter(goal => 
-    !checkins.some(c => c.goal_id === goal.id && c.quarter === selectedQuarter)
-  );
+  let goalsWithoutCheckins = [];
+  try {
+    goalsWithoutCheckins = goals.filter(goal => 
+      !checkins.some(c => c.goal_id === goal.id && c.quarter === selectedQuarter)
+    );
+  } catch (error) {
+    console.error('Error filtering goals:', error);
+  }
 
   return (
     <div>
@@ -214,7 +313,7 @@ const EmployeeCheckins = () => {
           columns={columns}
           dataSource={checkins}
           rowKey="id"
-          loading={isLoading}
+          loading={checkinsLoading}
           pagination={false}
         />
       </Card>
