@@ -5,8 +5,8 @@ import { Spin } from 'antd';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load pages for better performance
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const PremiumAuth = lazy(() => import('./components/PremiumAuth'));
+const HomePage = lazy(() => import('./pages/HomePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
 const EmployeeGoals = lazy(() => import('./pages/employee/EmployeeGoals'));
@@ -73,9 +73,9 @@ function App() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-          <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
+          {/* Public Routes - Unified Authentication */}
+          <Route path="/login" element={user ? <Navigate to="/" replace /> : <PremiumAuth />} />
+          <Route path="/register" element={user ? <Navigate to="/" replace /> : <PremiumAuth />} />
 
           {/* Protected Routes */}
           <Route
@@ -87,16 +87,11 @@ function App() {
                   {/* Default redirect based on role */}
                   <Route
                     path="/"
-                    element={
-                      user?.role === 'Admin' ? (
-                        <Navigate to="/admin/goals" replace />
-                      ) : user?.role === 'Manager' ? (
-                        <Navigate to="/manager/approvals" replace />
-                      ) : (
-                        <Navigate to="/employee/goals" replace />
-                      )
-                    }
+                    element={<Navigate to="/home" replace />}
                   />
+
+                  {/* Home Page */}
+                  <Route path="/home" element={<HomePage />} />
 
                   {/* Employee Routes */}
                   <Route path="/employee/goals" element={<EmployeeGoals />} />

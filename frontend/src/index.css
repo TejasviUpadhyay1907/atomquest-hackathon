@@ -1,6 +1,10 @@
 /* Import Inter font - MUST be first */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+/* Premium Design System */
+@import './styles/premium-design-system.css';
+@import './styles/auth-design-system.css';
+
 /* Tailwind CSS */
 @tailwind base;
 @tailwind components;
