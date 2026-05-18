@@ -52,22 +52,6 @@ const ManagerTeamCheckins = () => {
 
   const checkins = checkinsData?.data || [];
 
-  /* ── PREVIEW DATA — shows how the table looks when filled ── */
-  const previewData = [
-    { check_in_id: 1, employee_id: 1, employee_name: 'Priya Sharma',    goal_title: 'Increase Sales Revenue by 20%',        quarter: selectedQuarter, planned_target: '20%',    actual_achievement: '17%',  progress_score: 85,  status: 'On Track',    manager_comment: 'Good progress, keep it up!' },
-    { check_in_id: 2, employee_id: 1, employee_name: 'Priya Sharma',    goal_title: 'Complete 10 Client Onboardings',        quarter: selectedQuarter, planned_target: '10',     actual_achievement: '10',   progress_score: 100, status: 'Completed',   manager_comment: 'Excellent work this quarter.' },
-    { check_in_id: 3, employee_id: 2, employee_name: 'Rohan Mehta',     goal_title: 'Reduce Support Ticket Resolution Time', quarter: selectedQuarter, planned_target: '24 hrs', actual_achievement: '18 hrs', progress_score: 100, status: 'Completed',  manager_comment: '' },
-    { check_in_id: 4, employee_id: 2, employee_name: 'Rohan Mehta',     goal_title: 'Achieve 95% Customer Satisfaction',     quarter: selectedQuarter, planned_target: '95%',    actual_achievement: '91%',  progress_score: 72,  status: 'On Track',    manager_comment: 'Needs improvement in response quality.' },
-    { check_in_id: 5, employee_id: 3, employee_name: 'Ananya Patel',    goal_title: 'Launch 3 Marketing Campaigns',          quarter: selectedQuarter, planned_target: '3',      actual_achievement: '1',    progress_score: 33,  status: 'Not Started', manager_comment: '' },
-    { check_in_id: 6, employee_id: 3, employee_name: 'Ananya Patel',    goal_title: 'Grow Social Media Followers by 15%',    quarter: selectedQuarter, planned_target: '15%',    actual_achievement: '8%',   progress_score: 53,  status: 'On Track',    manager_comment: '' },
-    { check_in_id: 7, employee_id: 4, employee_name: 'Vikram Singh',    goal_title: 'Deploy 5 Product Features',             quarter: selectedQuarter, planned_target: '5',      actual_achievement: '5',    progress_score: 100, status: 'Completed',   manager_comment: 'All features shipped on time.' },
-    { check_in_id: 8, employee_id: 4, employee_name: 'Vikram Singh',    goal_title: 'Reduce Bug Count by 30%',               quarter: selectedQuarter, planned_target: '30%',    actual_achievement: '22%',  progress_score: 73,  status: 'On Track',    manager_comment: '' },
-  ];
-
-  /* Use real data if available, otherwise show preview */
-  const displayData = checkins.length > 0 ? checkins : previewData;
-  const isPreview = checkins.length === 0 && !isLoading;
-
   const commentMutation = useMutation({
     mutationFn: ({ id, data }) => checkinAPI.updateCheckin(id, data),
     onSuccess: () => {
@@ -90,13 +74,13 @@ const ManagerTeamCheckins = () => {
   };
 
   /* stats */
-  const completed = displayData.filter(c => c.status === 'Completed').length;
-  const onTrack = displayData.filter(c => c.status === 'On Track').length;
-  const notStarted = displayData.filter(c => c.status === 'Not Started').length;
-  const teamMembers = [...new Set(displayData.map(c => c.employee_id))].length;
-  const completionPct = displayData.length > 0 ? Math.round((completed / displayData.length) * 100) : 0;
+  const completed = checkins.filter(c => c.status === 'Completed').length;
+  const onTrack = checkins.filter(c => c.status === 'On Track').length;
+  const notStarted = checkins.filter(c => c.status === 'Not Started').length;
+  const teamMembers = [...new Set(checkins.map(c => c.employee_id))].length;
+  const completionPct = checkins.length > 0 ? Math.round((completed / checkins.length) * 100) : 0;
 
-  const employeeStats = displayData.reduce((acc, c) => {
+  const employeeStats = checkins.reduce((acc, c) => {
     if (!acc[c.employee_id]) acc[c.employee_id] = { name: c.employee_name, total: 0, completed: 0, onTrack: 0, notStarted: 0 };
     acc[c.employee_id].total++;
     if (c.status === 'Completed') acc[c.employee_id].completed++;
@@ -253,7 +237,7 @@ const ManagerTeamCheckins = () => {
           </div>
 
           <div style={{ padding: '0' }}>
-            {isPreview && (
+            {false && (
               <div style={{ padding: '10px 20px', background: 'rgba(245,158,11,0.08)',
                 borderBottom: '1px solid rgba(245,158,11,0.15)',
                 display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -265,7 +249,7 @@ const ManagerTeamCheckins = () => {
             )}
             <Table
               columns={columns}
-              dataSource={displayData}
+              dataSource={checkins}
               rowKey="check_in_id"
               loading={isLoading}
               scroll={{ x: 1100 }}
@@ -376,3 +360,4 @@ const ManagerTeamCheckins = () => {
 };
 
 export default ManagerTeamCheckins;
+

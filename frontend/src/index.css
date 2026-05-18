@@ -43,8 +43,8 @@ body {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--background-light);
-  color: var(--text-primary);
+  background: #0d0d14;
+  color: white;
   line-height: 1.6;
 }
 
@@ -485,26 +485,120 @@ body {
 }
 
 /* ============================================================
+   DARK THEME — ANT DESIGN GLOBAL OVERRIDES
+   ============================================================ */
+
+/* Default (Cancel/secondary) buttons — visible on dark background */
+.ant-btn-default {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: rgba(255,255,255,0.75) !important;
+  border-radius: 8px !important;
+}
+.ant-btn-default:hover {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.25) !important;
+  color: white !important;
+}
+
+/* Primary buttons */
+.ant-btn-primary {
+  background: linear-gradient(135deg,#667eea,#764ba2) !important;
+  border: none !important;
+  border-radius: 8px !important;
+}
+.ant-btn-primary:hover {
+  opacity: 0.9 !important;
+}
+
+/* Danger buttons */
+.ant-btn-dangerous {
+  background: rgba(239,68,68,0.1) !important;
+  border: 1px solid rgba(239,68,68,0.3) !important;
+  color: #f87171 !important;
+  border-radius: 8px !important;
+}
+.ant-btn-dangerous:hover {
+  background: rgba(239,68,68,0.2) !important;
+}
+
+/* Confirm modal dark theme */
+.ant-modal-confirm .ant-modal-content {
+  background: rgba(13,13,20,0.98) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 16px !important;
+}
+.ant-modal-confirm-title { color: white !important; }
+.ant-modal-confirm-content { color: rgba(255,255,255,0.6) !important; }
+
+/* Popconfirm dark theme */
+.ant-popover-inner {
+  background: rgba(13,13,20,0.98) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+}
+.ant-popover-message-title, .ant-popover-inner-content { color: rgba(255,255,255,0.8) !important; }
+
+/* ============================================================
    NOTIFICATION & MESSAGE STYLES
    ============================================================ */
 
-.ant-notification-notice {
-  border-radius: var(--border-radius) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-}
-
+/* Dark toast messages */
 .ant-message-notice-content {
+  background: rgba(13,13,20,0.97) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 10px !important;
+  color: white !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+.ant-message-success .anticon { color: #10b981 !important; }
+.ant-message-error .anticon { color: #ef4444 !important; }
+.ant-message-warning .anticon { color: #f59e0b !important; }
+.ant-message-info .anticon { color: #667eea !important; }
+
+/* Dark notification */
+.ant-notification-notice {
+  background: rgba(13,13,20,0.97) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+.ant-notification-notice-message { color: white !important; }
+.ant-notification-notice-description { color: rgba(255,255,255,0.6) !important; }
+
+/* Spin overlay — no white flash */
+.ant-spin-nested-loading > div > .ant-spin {
+  background: rgba(13,13,20,0.6) !important;
+}
+.ant-spin-container::after {
+  background: rgba(13,13,20,0.6) !important;
+}
+.ant-spin-dot-item { background: #667eea !important; }
+
+/* Dark scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Tooltip dark */
+.ant-tooltip-inner {
+  background: rgba(13,13,20,0.97) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  color: rgba(255,255,255,0.85) !important;
 }
+.ant-tooltip-arrow-content { background: rgba(13,13,20,0.97) !important; }
 
-.ant-spin-dot-item {
-  background-color: var(--primary-color) !important;
-}
+/* InputNumber arrows */
+.ant-input-number-handler-wrap { background: rgba(255,255,255,0.05) !important; }
+.ant-input-number-handler { color: rgba(255,255,255,0.4) !important; border-color: rgba(255,255,255,0.08) !important; }
+.ant-input-number-handler:hover { color: white !important; background: rgba(255,255,255,0.08) !important; }
 
-.ant-empty-description {
-  color: #999 !important;
-}
+/* Empty state */
+.ant-empty-description { color: rgba(255,255,255,0.3) !important; }
+.ant-empty-img-simple-path { fill: rgba(255,255,255,0.08) !important; }
+.ant-empty-img-simple-ellipse { fill: rgba(255,255,255,0.04) !important; }
 
 /* ============================================================
    ENHANCED UI - BASED ON 30 BEST-IN-CLASS EXAMPLES

@@ -47,19 +47,15 @@ const EmployeeCheckins = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log('EmployeeCheckins component mounted');
   }, []);
 
   const { data: goalsData, error: goalsError, isLoading: goalsLoading } = useQuery({
     queryKey: ['myGoals'],
     queryFn: async () => {
-      console.log('Fetching goals...');
       try {
         const result = await goalAPI.getMyGoals();
-        console.log('Goals fetched successfully:', result);
         return result;
       } catch (error) {
-        console.error('Error fetching goals:', error);
         throw error;
       }
     },
@@ -68,13 +64,10 @@ const EmployeeCheckins = () => {
   const { data: checkinsData, isLoading: checkinsLoading, error: checkinsError } = useQuery({
     queryKey: ['myCheckins', selectedQuarter],
     queryFn: async () => {
-      console.log('Fetching checkins for quarter:', selectedQuarter);
       try {
         const result = await checkinAPI.getMyCheckins(selectedQuarter);
-        console.log('Checkins fetched successfully:', result);
         return result;
       } catch (error) {
-        console.error('Error fetching checkins:', error);
         throw error;
       }
     },
@@ -85,9 +78,7 @@ const EmployeeCheckins = () => {
   try {
     goals = goalsData?.data?.filter(g => g.status === 'Approved') || [];
     checkins = checkinsData?.data || [];
-    console.log('Processed data - Goals:', goals.length, 'Checkins:', checkins.length);
   } catch (error) {
-    console.error('Error processing data:', error);
     message.error('Error processing data. Please refresh the page.');
   }
 
@@ -100,7 +91,6 @@ const EmployeeCheckins = () => {
       form.resetFields();
     },
     onError: (error) => {
-      console.error('Create checkin error:', error);
       message.error(error.response?.data?.detail || 'Failed to create check-in');
     },
   });
@@ -114,26 +104,22 @@ const EmployeeCheckins = () => {
       form.resetFields();
     },
     onError: (error) => {
-      console.error('Update checkin error:', error);
       message.error(error.response?.data?.detail || 'Failed to update check-in');
     },
   });
 
   const handleAddCheckin = (goal) => {
     try {
-      console.log('Adding checkin for goal:', goal);
       setSelectedGoal(goal);
       form.setFieldsValue({ goal_id: goal.id, quarter: selectedQuarter });
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error in handleAddCheckin:', error);
       message.error('Error opening check-in form');
     }
   };
 
   const handleSubmit = (values) => {
     try {
-      console.log('Submitting checkin:', values);
       const existingCheckin = checkins.find(c => c.goal_id === values.goal_id && c.quarter === values.quarter);
       if (existingCheckin) {
         updateMutation.mutate({ id: existingCheckin.id, data: values });
@@ -141,7 +127,6 @@ const EmployeeCheckins = () => {
         createMutation.mutate(values);
       }
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
       message.error('Error submitting check-in');
     }
   };
@@ -188,7 +173,6 @@ const EmployeeCheckins = () => {
       !checkins.some(c => c.goal_id === goal.id && c.quarter === selectedQuarter)
     );
   } catch (error) {
-    console.error('Error filtering goals:', error);
   }
 
   const columns = [
@@ -449,3 +433,4 @@ const EmployeeCheckins = () => {
 };
 
 export default EmployeeCheckins;
+

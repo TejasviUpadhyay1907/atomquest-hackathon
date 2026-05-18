@@ -269,6 +269,9 @@ const EmployeeGoals = () => {
         .ant-select-item-option:hover { background: rgba(99,102,241,0.15) !important; }
         .ant-select-item-option-selected { background: rgba(99,102,241,0.25) !important; color: white !important; }
         .ant-form-item-explain-error { color: #f87171 !important; }
+        .ant-btn-default { background: rgba(255,255,255,0.06) !important; border: 1px solid rgba(255,255,255,0.15) !important; color: rgba(255,255,255,0.7) !important; border-radius: 8px !important; }
+        .ant-btn-default:hover { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.25) !important; color: white !important; }
+        .ant-btn-primary { background: linear-gradient(135deg,#667eea,#764ba2) !important; border: none !important; border-radius: 8px !important; }
         .ant-spin-dot-item { background: #a78bfa !important; }
         .ant-modal-confirm-title { color: white !important; }
         .ant-modal-confirm-content { color: rgba(255,255,255,0.6) !important; }
