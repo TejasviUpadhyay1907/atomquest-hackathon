@@ -75,6 +75,9 @@ export const adminAPI = {
   createSharedGoal: (data) => api.post('/api/admin/shared-goals', data),
   getAllUsers: () => api.get('/api/admin/users'),
   getStats: () => api.get('/api/admin/stats'),
+  // Escalation Module
+  getEscalationStatus: (quarter) => api.get('/api/admin/escalation/status', { params: { quarter } }),
+  sendEscalationReminders: (quarter) => api.post('/api/admin/escalation/send-reminders', null, { params: { quarter } }),
 };
 
 // Check-in APIs

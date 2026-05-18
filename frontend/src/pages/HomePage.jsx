@@ -393,6 +393,9 @@ const AdminHome = ({ navigate }) => {
   const { data: usersData } = useQuery({ queryKey: ['allUsers'], queryFn: adminAPI.getAllUsers });
   const { data: notifData } = useQuery({ queryKey: ['notifications', false], queryFn: () => notificationAPI.getNotifications(false) });
   const { data: statusData } = useQuery({ queryKey: ['statusOverview'], queryFn: reportAPI.getStatusOverview });
+  const { data: escalationData } = useQuery({ queryKey: ['escalationStatus'], queryFn: () => adminAPI.getEscalationStatus('Q1') });
+  const [sendingReminders, setSendingReminders] = useState(false);
+  const [reminderResult, setReminderResult] = useState(null);
 
   const goals = goalsData?.data || [];
   const users = usersData?.data || [];
@@ -494,6 +497,63 @@ const AdminHome = ({ navigate }) => {
                 </div>
               </motion.div>
             ))}
+          </GlassPanel>
+
+          {/* Escalation Module */}
+          <GlassPanel style={{ padding: '20px' }}>
+            <SectionLabel>Escalation Module</SectionLabel>
+            {escalationData?.data && (
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: '10px', padding: '10px 14px', textAlign: 'center' }}>
+                    <div style={{ color: '#fca5a5', fontSize: '1.4rem', fontWeight: 700 }}>
+                      {escalationData.data.employees_missing_checkins || 0}
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>Missing check-ins</div>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+                    borderRadius: '10px', padding: '10px 14px', textAlign: 'center' }}>
+                    <div style={{ color: '#fcd34d', fontSize: '1.4rem', fontWeight: 700 }}>
+                      {escalationData.data.pending_approvals || 0}
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>Pending approvals</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {reminderResult && (
+              <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)',
+                borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+                <div style={{ color: '#6ee7b7', fontSize: '13px', fontWeight: 600 }}>
+                  ✅ {reminderResult.emails_sent} reminder email{reminderResult.emails_sent !== 1 ? 's' : ''} sent
+                </div>
+              </div>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              disabled={sendingReminders}
+              onClick={async () => {
+                setSendingReminders(true);
+                try {
+                  const res = await adminAPI.sendEscalationReminders('Q1');
+                  setReminderResult(res.data);
+                } catch (e) {
+                  setReminderResult({ emails_sent: 0 });
+                }
+                setSendingReminders(false);
+              }}
+              style={{ width: '100%', padding: '11px', border: 'none', borderRadius: '10px', cursor: sendingReminders ? 'not-allowed' : 'pointer',
+                background: sendingReminders ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#667eea,#764ba2)',
+                color: sendingReminders ? 'rgba(255,255,255,0.4)' : 'white', fontWeight: 600, fontSize: '13px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {sendingReminders ? (
+                <><span className="auth-spinner" style={{ width: '14px', height: '14px' }} /> Sending…</>
+              ) : '📧 Send Escalation Reminders'}
+            </motion.button>
+            <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
+              Sends email reminders to employees missing check-ins and managers with pending approvals
+            </div>
           </GlassPanel>
 
           {/* System activity */}

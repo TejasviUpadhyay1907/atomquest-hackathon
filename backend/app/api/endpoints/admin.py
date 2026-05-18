@@ -224,3 +224,153 @@ def get_audit_logs(
         }
         for log in audit_logs
     ]
+
+
+@router.post("/escalation/send-reminders", response_model=dict)
+def send_escalation_reminders(
+    quarter: str = "Q1",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """
+    Escalation Module: Send reminder emails to employees/managers who haven't completed actions.
+    - Employees with approved goals but no check-in for the quarter
+    - Managers with pending approvals older than expected
+    """
+    from app.models.goal import Goal, GoalStatus
+    from app.models.check_in import CheckIn
+    
+    sent_count = 0
+    escalation_log = []
+
+    # 1. Find employees with approved goals but missing check-ins for this quarter
+    approved_goals = db.query(Goal).filter(Goal.status == GoalStatus.APPROVED).all()
+    
+    # Group by employee
+    employee_goals = {}
+    for goal in approved_goals:
+        if goal.user_id not in employee_goals:
+            employee_goals[goal.user_id] = []
+        employee_goals[goal.user_id].append(goal)
+    
+    for emp_id, goals in employee_goals.items():
+        # Check if employee has check-ins for this quarter
+        checkins = db.query(CheckIn).filter(
+            CheckIn.goal_id.in_([g.id for g in goals]),
+            CheckIn.quarter == quarter
+        ).all()
+        
+        checked_goal_ids = {c.goal_id for c in checkins}
+        missing_goals = [g for g in goals if g.id not in checked_goal_ids]
+        
+        if missing_goals:
+            employee = db.query(User).filter(User.id == emp_id).first()
+            if employee and employee.email:
+                email_service.send_check_in_reminder_email(
+                    employee.email,
+                    employee.full_name,
+                    quarter
+                )
+                sent_count += 1
+                escalation_log.append({
+                    "type": "check_in_reminder",
+                    "recipient": employee.full_name,
+                    "email": employee.email,
+                    "reason": f"{len(missing_goals)} goal(s) missing {quarter} check-in"
+                })
+
+    # 2. Find managers with pending approvals
+    pending_goals = db.query(Goal).filter(Goal.status == GoalStatus.PENDING_APPROVAL).all()
+    
+    # Group by manager (via employee's manager relationship)
+    manager_pending = {}
+    for goal in pending_goals:
+        employee = db.query(User).filter(User.id == goal.user_id).first()
+        if employee and employee.manager_id:
+            if employee.manager_id not in manager_pending:
+                manager_pending[employee.manager_id] = []
+            manager_pending[employee.manager_id].append(goal)
+    
+    for mgr_id, pending in manager_pending.items():
+        manager = db.query(User).filter(User.id == mgr_id).first()
+        if manager and manager.email:
+            subject = f"Action Required: {len(pending)} goal(s) awaiting your approval"
+            html = f"""
+            <html><body style="font-family:Arial,sans-serif;color:#333;">
+            <div style="max-width:600px;margin:0 auto;padding:20px;">
+                <h2 style="color:#667eea;">Pending Approvals Reminder</h2>
+                <p>Hi {manager.full_name},</p>
+                <p>You have <strong>{len(pending)} goal(s)</strong> awaiting your review and approval.</p>
+                <p>Please review and approve or return them for rework to keep the process moving.</p>
+                <div style="margin:24px 0;">
+                    <a href="https://atomquest-frontend.vercel.app/manager/approvals"
+                       style="background:#667eea;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;">
+                        Review Approvals
+                    </a>
+                </div>
+                <p style="color:#999;font-size:13px;">AtomQuest Goal Tracking Portal — Escalation Notification</p>
+            </div></body></html>
+            """
+            email_service.send_email(manager.email, subject, html)
+            sent_count += 1
+            escalation_log.append({
+                "type": "approval_reminder",
+                "recipient": manager.full_name,
+                "email": manager.email,
+                "reason": f"{len(pending)} goal(s) pending approval"
+            })
+
+    return {
+        "message": f"Escalation reminders sent successfully",
+        "emails_sent": sent_count,
+        "quarter": quarter,
+        "escalation_log": escalation_log
+    }
+
+
+@router.get("/escalation/status", response_model=dict)
+def get_escalation_status(
+    quarter: str = "Q1",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get escalation status — who needs reminders without sending emails"""
+    from app.models.goal import Goal, GoalStatus
+    from app.models.check_in import CheckIn
+
+    # Employees missing check-ins
+    approved_goals = db.query(Goal).filter(Goal.status == GoalStatus.APPROVED).all()
+    employee_goals = {}
+    for goal in approved_goals:
+        if goal.user_id not in employee_goals:
+            employee_goals[goal.user_id] = []
+        employee_goals[goal.user_id].append(goal)
+
+    missing_checkins = []
+    for emp_id, goals in employee_goals.items():
+        checkins = db.query(CheckIn).filter(
+            CheckIn.goal_id.in_([g.id for g in goals]),
+            CheckIn.quarter == quarter
+        ).all()
+        checked_ids = {c.goal_id for c in checkins}
+        missing = [g for g in goals if g.id not in checked_ids]
+        if missing:
+            emp = db.query(User).filter(User.id == emp_id).first()
+            if emp:
+                missing_checkins.append({
+                    "employee": emp.full_name,
+                    "missing_goals": len(missing),
+                    "quarter": quarter
+                })
+
+    # Managers with pending approvals
+    pending_goals = db.query(Goal).filter(Goal.status == GoalStatus.PENDING_APPROVAL).all()
+    pending_approvals = len(pending_goals)
+
+    return {
+        "quarter": quarter,
+        "employees_missing_checkins": len(missing_checkins),
+        "missing_checkin_details": missing_checkins,
+        "pending_approvals": pending_approvals,
+        "total_requiring_action": len(missing_checkins) + (1 if pending_approvals > 0 else 0)
+    }

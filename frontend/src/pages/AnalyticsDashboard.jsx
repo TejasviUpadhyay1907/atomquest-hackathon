@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
+  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, RadarChart, Radar,
+  PolarGrid, PolarAngleAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { reportAPI } from '../services/api';
+import { reportAPI, checkinAPI, adminAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const COLORS = ['#667eea','#10b981','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#84cc16'];
@@ -85,6 +86,19 @@ const AnalyticsDashboard = () => {
     queryFn: () => reportAPI.getAchievementReport(),
   });
 
+  // Manager effectiveness — team check-in completion per manager
+  const { data: usersData } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => adminAPI.getAllUsers(),
+    enabled: user?.role === 'Admin',
+  });
+
+  const { data: teamCheckinsQ1 } = useQuery({
+    queryKey: ['teamCheckinsAll'],
+    queryFn: () => checkinAPI.getTeamCheckins(selectedQuarter),
+    enabled: user?.role === 'Admin' || user?.role === 'Manager',
+  });
+
   const distribution = distributionData?.data || [];
   const statusOverview = statusData?.data || [];
   const completion = completionData?.data || {};
@@ -104,6 +118,32 @@ const AnalyticsDashboard = () => {
 
   const totalGoals = goalDistributionData.reduce((s, i) => s + i.value, 0);
   const isLoading = d1 || d2 || d3 || d4;
+
+  // UoM distribution
+  const uomDistribution = achievements.reduce((acc, item) => {
+    const uom = item.uom_type || 'Unknown';
+    acc[uom] = (acc[uom] || 0) + 1;
+    return acc;
+  }, {});
+  const uomData = Object.entries(uomDistribution).map(([name, value]) => ({ name, value }));
+
+  // Manager effectiveness — check-in completion rate per manager
+  const allUsers = usersData?.data || [];
+  const teamCheckins = teamCheckinsQ1?.data || [];
+  const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'Manager');
+  const managerEffectiveness = managers.map(mgr => {
+    const teamMembers = allUsers.filter(u => u.manager_id === mgr.id);
+    const teamIds = teamMembers.map(m => m.id);
+    const teamCheckinsDone = teamCheckins.filter(c => teamIds.includes(c.employee_id));
+    const completed = teamCheckinsDone.filter(c => c.status === 'Completed').length;
+    const total = teamCheckinsDone.length;
+    return {
+      name: mgr.full_name.split(' ')[0],
+      completion: total > 0 ? Math.round((completed / total) * 100) : 0,
+      total,
+      completed,
+    };
+  }).filter(m => m.total > 0);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -275,6 +315,81 @@ const AnalyticsDashboard = () => {
             </ResponsiveContainer>
           </GlassCard>
         </motion.div>
+      </div>
+
+      {/* ── UoM DISTRIBUTION + MANAGER EFFECTIVENESS ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(420px,1fr))', gap: '20px', marginBottom: '20px' }}>
+
+        {/* UoM Distribution */}
+        {uomData.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
+            <GlassCard style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>Goals by UoM Type</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '2px' }}>Measurement type distribution</div>
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={uomData} barSize={36}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Goals" radius={[6,6,0,0]} fill="url(#uomGrad)" />
+                  <defs>
+                    <linearGradient id="uomGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+          </motion.div>
+        )}
+
+        {/* Manager Effectiveness */}
+        {managerEffectiveness.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+            <GlassCard style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>Manager Effectiveness</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '2px' }}>Check-in completion rate by manager — {selectedQuarter}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {managerEffectiveness.map((mgr, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35 + i * 0.06 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+                      background: `linear-gradient(135deg,${COLORS[i % COLORS.length]},${COLORS[(i+2) % COLORS.length]})`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'white', fontWeight: 700, fontSize: '13px' }}>
+                      {mgr.name.charAt(0)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <span style={{ color: 'white', fontWeight: 600, fontSize: '13px' }}>{mgr.name}</span>
+                        <span style={{ color: mgr.completion >= 80 ? '#10b981' : mgr.completion >= 50 ? '#f59e0b' : '#ef4444',
+                          fontSize: '13px', fontWeight: 700 }}>{mgr.completion}%</span>
+                      </div>
+                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${mgr.completion}%` }}
+                          transition={{ delay: 0.4 + i * 0.06, duration: 0.8, ease: [0.16,1,0.3,1] }}
+                          style={{ height: '100%', borderRadius: '3px',
+                            background: mgr.completion >= 80 ? 'linear-gradient(90deg,#10b981,#059669)'
+                              : mgr.completion >= 50 ? 'linear-gradient(90deg,#f59e0b,#d97706)'
+                              : 'linear-gradient(90deg,#ef4444,#dc2626)' }} />
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '3px' }}>
+                        {mgr.completed}/{mgr.total} check-ins completed
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </GlassCard>
+          </motion.div>
+        )}
       </div>
 
       {/* ── TEAM PERFORMANCE ── */}
