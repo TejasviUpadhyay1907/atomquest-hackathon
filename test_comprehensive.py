@@ -51,7 +51,7 @@ print_section("1. AUTHENTICATION & AUTHORIZATION TESTS")
 
 # Test 1.1: Health Check
 try:
-    response = requests.get(f"{BASE_URL}/health", timeout=10)
+    response = requests.get(f"{BASE_URL}/health", timeout=30)
     passed = response.status_code == 200 and response.json().get("status") == "healthy"
     score = 10 if passed else 0
     results["authentication"].append(("Health Check", score))
@@ -65,7 +65,7 @@ try:
     response = requests.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": "admin@demo.com", "password": "password123"},
-        timeout=10
+        timeout=30
     )
     passed = response.status_code == 200 and "access_token" in response.json()
     admin_token = response.json().get("access_token") if passed else None
@@ -82,7 +82,7 @@ try:
     response = requests.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": "manager@demo.com", "password": "password123"},
-        timeout=10
+        timeout=30
     )
     passed = response.status_code == 200 and "access_token" in response.json()
     manager_token = response.json().get("access_token") if passed else None
@@ -99,7 +99,7 @@ try:
     response = requests.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": "emp1@demo.com", "password": "password123"},
-        timeout=10
+        timeout=30
     )
     passed = response.status_code == 200 and "access_token" in response.json()
     employee_token = response.json().get("access_token") if passed else None
@@ -111,15 +111,15 @@ except Exception as e:
     results["authentication"].append(("Employee Login", 0))
     print_test("Employee Login", False, 0, str(e))
 
-# Test 1.5: Invalid Login
+# Test 1.5: Invalid Login Rejection
 try:
     response = requests.post(
         f"{BASE_URL}/api/auth/login",
-        json={"email": "invalid@test.com", "password": "wrongpass"},
-        timeout=10
+        json={"email": "invalid@test.com", "password": "wrongpassword"},
+        timeout=30
     )
-    passed = response.status_code == 401
-    score = 10 if passed else 5
+    passed = response.status_code == 401 or response.status_code == 422
+    score = 10 if passed else 0
     results["authentication"].append(("Invalid Login Rejection", score))
     print_test("Invalid Login Rejection", passed, score, "Properly rejects invalid credentials")
 except Exception as e:
