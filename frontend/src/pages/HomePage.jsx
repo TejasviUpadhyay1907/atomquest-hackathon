@@ -456,14 +456,12 @@ const AdminHome = ({ navigate }) => {
         <KpiCard icon="🔗" label="Shared Goals" value={sharedGoals} gradient="linear-gradient(135deg,#06b6d4,#3b82f6)" delay={0.24} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px' }}>
-        <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <SectionLabel>Organization priorities</SectionLabel>
           {actions.length > 0
             ? actions.map((a, i) => (
-                <div key={i} style={{ marginBottom: '10px' }}>
-                  <ActionCard {...a} onClick={() => navigate(a.path)} delay={0.05 + i * 0.07} />
-                </div>
+                <ActionCard key={i} {...a} onClick={() => navigate(a.path)} delay={0.05 + i * 0.07} />
               ))
             : (
               <GlassPanel style={{ padding: '32px', textAlign: 'center' }}>
@@ -473,9 +471,23 @@ const AdminHome = ({ navigate }) => {
               </GlassPanel>
             )
           }
+
+          {/* System activity — moved here to balance left column */}
+          <GlassPanel style={{ padding: '20px', marginTop: '4px' }}>
+            <SectionLabel>System activity</SectionLabel>
+            {notifications.length > 0
+              ? notifications.map((n, i) => (
+                  <ActivityItem key={n.id}
+                    icon={n.type === 'goal_approved' ? '✅' : n.type === 'goal_rejected' ? '❌' : n.type === 'shared_goal_assigned' ? '🔗' : '🔔'}
+                    text={n.message} time={new Date(n.created_at).toLocaleDateString()}
+                    delay={0.1 + i * 0.06} />
+                ))
+              : <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', padding: '16px 0' }}>No recent activity</div>
+            }
+          </GlassPanel>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Goal status breakdown */}
           <GlassPanel style={{ padding: '20px' }}>
             <SectionLabel>Goal status breakdown</SectionLabel>
@@ -554,20 +566,6 @@ const AdminHome = ({ navigate }) => {
             <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
               Sends email reminders to employees missing check-ins and managers with pending approvals
             </div>
-          </GlassPanel>
-
-          {/* System activity */}
-          <GlassPanel style={{ padding: '20px', flex: 1 }}>
-            <SectionLabel>System activity</SectionLabel>
-            {notifications.length > 0
-              ? notifications.map((n, i) => (
-                  <ActivityItem key={n.id}
-                    icon={n.type === 'goal_approved' ? '✅' : n.type === 'goal_rejected' ? '❌' : n.type === 'shared_goal_assigned' ? '🔗' : '🔔'}
-                    text={n.message} time={new Date(n.created_at).toLocaleDateString()}
-                    delay={0.1 + i * 0.06} />
-                ))
-              : <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', padding: '16px 0' }}>No recent activity</div>
-            }
           </GlassPanel>
         </div>
       </div>
