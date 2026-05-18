@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Select, Input, Space, message, Modal, Tag } from 'antd';
-import { UnlockOutlined, SearchOutlined } from '@ant-design/icons';
+import { UnlockOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '../../services/api';
@@ -51,11 +51,25 @@ const AdminGoals = () => {
     onError: (err) => message.error(err.response?.data?.detail || 'Failed to unlock goal'),
   });
 
+  const approveMutation = useMutation({
+    mutationFn: (id) => adminAPI.approveGoal(id),
+    onSuccess: () => { message.success('Goal approved!'); queryClient.invalidateQueries(['allGoals']); },
+    onError: (err) => message.error(err.response?.data?.detail || 'Failed to approve goal'),
+  });
+
   const handleUnlock = (goal) => {
     Modal.confirm({
       title: 'Unlock Goal?',
       content: `Are you sure you want to unlock "${goal.title}"? The employee will be able to edit it again.`,
       onOk: () => unlockMutation.mutate(goal.id),
+    });
+  };
+
+  const handleAdminApprove = (goal) => {
+    Modal.confirm({
+      title: 'Approve Goal?',
+      content: `Approve "${goal.title}" directly as Admin? This is used for manager-level goals that need skip-level approval.`,
+      onOk: () => approveMutation.mutate(goal.id),
     });
   };
 
@@ -98,14 +112,26 @@ const AdminGoals = () => {
         : <span style={{ padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:600, background:'rgba(255,255,255,0.06)', color:'rgba(255,255,255,0.4)' }}>Unlocked</span> },
     { title: 'Shared', dataIndex: 'is_shared', key: 'is_shared', width: 80,
       render: (shared) => shared ? <span style={{ padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:600, background:'rgba(59,130,246,0.12)', color:'#93c5fd' }}>Shared</span> : null },
-    { title: 'Actions', key: 'actions', width: 110, fixed: 'right',
-      render: (_, record) => record.is_locked && (
-        <button onClick={() => handleUnlock(record)}
-          style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px',
-            background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)',
-            borderRadius:'8px', color:'#fcd34d', fontWeight:600, cursor:'pointer', fontSize:'13px' }}>
-          <UnlockOutlined /> Unlock
-        </button>
+    { title: 'Actions', key: 'actions', width: 200, fixed: 'right',
+      render: (_, record) => (
+        <Space size={8} wrap>
+          {(record.status === 'Pending Approval' || record.status === 'Draft') && (
+            <button type="button" onClick={() => handleAdminApprove(record)}
+              style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px',
+                background:'rgba(16,185,129,0.12)', border:'1px solid rgba(16,185,129,0.35)',
+                borderRadius:'8px', color:'#6ee7b7', fontWeight:600, cursor:'pointer', fontSize:'13px' }}>
+              <CheckOutlined /> Approve
+            </button>
+          )}
+          {record.is_locked && (
+            <button type="button" onClick={() => handleUnlock(record)}
+              style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px',
+                background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)',
+                borderRadius:'8px', color:'#fcd34d', fontWeight:600, cursor:'pointer', fontSize:'13px' }}>
+              <UnlockOutlined /> Unlock
+            </button>
+          )}
+        </Space>
       ) },
   ];
 

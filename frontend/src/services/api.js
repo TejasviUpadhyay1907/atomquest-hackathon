@@ -73,6 +73,7 @@ export const managerAPI = {
 export const adminAPI = {
   getAllGoals: () => api.get('/api/admin/all-goals'),
   unlockGoal: (id) => api.post(`/api/admin/goals/${id}/unlock`),
+  approveGoal: (id) => api.post(`/api/admin/goals/${id}/approve`),
   createSharedGoal: (data) => api.post('/api/admin/shared-goals', data),
   getAllUsers: () => api.get('/api/admin/users'),
   getStats: () => api.get('/api/admin/stats'),
