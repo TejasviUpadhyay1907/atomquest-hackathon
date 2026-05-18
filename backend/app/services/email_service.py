@@ -26,7 +26,7 @@ class EmailService:
         
         try:
             params = {
-                "from": "Goal Tracking Portal <noreply@goaltracking.com>",
+                "from": "AtomQuest <onboarding@resend.dev>",
                 "to": [to_email],
                 "subject": subject,
                 "html": html_content
@@ -58,7 +58,7 @@ class EmailService:
                 <p><strong>{employee_name}</strong> has submitted <strong>{goal_count} goals</strong> for your review and approval.</p>
                 <p>Please review the goals and either approve them or return them for rework.</p>
                 <div style="margin: 30px 0;">
-                    <a href="http://localhost:3000/manager/approvals" 
+                    <a href="https://atomquest-frontend.vercel.app/manager/approvals" 
                        style="background-color: #1890ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                         Review Goals
                     </a>
@@ -91,7 +91,7 @@ class EmailService:
                 <p>Great news! Your manager has approved your <strong>{goal_count} goals</strong>.</p>
                 <p>Your goals are now locked and you can start working towards achieving them. Remember to complete your quarterly check-ins to track your progress.</p>
                 <div style="margin: 30px 0;">
-                    <a href="http://localhost:3000/employee/goals" 
+                    <a href="https://atomquest-frontend.vercel.app/employee/goals" 
                        style="background-color: #52c41a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                         View My Goals
                     </a>
@@ -129,7 +129,7 @@ class EmailService:
                 </div>
                 <p>Please review the feedback and update your goal accordingly.</p>
                 <div style="margin: 30px 0;">
-                    <a href="http://localhost:3000/employee/goals" 
+                    <a href="https://atomquest-frontend.vercel.app/employee/goals" 
                        style="background-color: #1890ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                         Update Goal
                     </a>
@@ -162,7 +162,7 @@ class EmailService:
                 <p>This is a reminder to complete your <strong>{quarter} quarterly check-in</strong>.</p>
                 <p>Please update your progress and achievement status for all your goals.</p>
                 <div style="margin: 30px 0;">
-                    <a href="http://localhost:3000/employee/check-ins" 
+                    <a href="https://atomquest-frontend.vercel.app/employee/check-ins" 
                        style="background-color: #1890ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                         Complete Check-in
                     </a>
@@ -195,7 +195,7 @@ class EmailService:
                 <p>A departmental goal <strong>"{goal_title}"</strong> has been assigned to you.</p>
                 <p>You can adjust the weightage for this goal, but the title and target are set by your manager.</p>
                 <div style="margin: 30px 0;">
-                    <a href="http://localhost:3000/employee/goals" 
+                    <a href="https://atomquest-frontend.vercel.app/employee/goals" 
                        style="background-color: #1890ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                         View Goal
                     </a>
@@ -209,3 +209,4 @@ class EmailService:
         """
         
         return self.send_email(employee_email, subject, html_content)
+
