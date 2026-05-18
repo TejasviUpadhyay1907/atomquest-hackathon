@@ -34,26 +34,52 @@ def unlock_goal(
     goal = db.query(Goal).filter(Goal.id == goal_id).first()
     
     if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Goal not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Goal not found")
     
     if not goal.is_locked:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Goal is not locked"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Goal is not locked")
     
-    # Unlock
     goal.is_locked = False
     goal.status = GoalStatus.DRAFT
+    db.commit()
+    db.refresh(goal)
+    AuditService.log_goal_unlock(db, goal.id, current_user.id)
+    return goal
+
+
+@router.post("/goals/{goal_id}/approve", response_model=GoalResponse)
+def admin_approve_goal(
+    goal_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Admin can directly approve any goal (for managers/skip-level approval)"""
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
     
+    if not goal:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Goal not found")
+    
+    if goal.status not in [GoalStatus.PENDING_APPROVAL, GoalStatus.DRAFT]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Goal cannot be approved from status: {goal.status}"
+        )
+    
+    goal.status = GoalStatus.APPROVED
+    goal.is_locked = True
     db.commit()
     db.refresh(goal)
     
-    # Log unlock
-    AuditService.log_goal_unlock(db, goal.id, current_user.id)
+    # Audit log
+    AuditService.log_action(db, goal.id, current_user.id, "Approved goal (Admin)", None, None, None)
+    
+    # Notify the goal owner
+    NotificationService.notify_goal_approved(db, goal.user_id, goal.title, goal.id)
+    
+    # Send email
+    owner = db.query(User).filter(User.id == goal.user_id).first()
+    if owner:
+        email_service.send_goal_approved_email(owner.email, owner.full_name, 1)
     
     return goal
 

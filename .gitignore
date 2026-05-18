@@ -31,3 +31,9 @@ build/
 # Database
 *.db
 *.sqlite
+
+# OS
+Thumbs.db
+
+# Local-only (keep diagram source if needed)
+docs/architecture/*.psd

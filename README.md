@@ -1,24 +1,28 @@
 # 🎯 AtomQuest Goal Tracking Portal
 
-> Enterprise-grade Goal Setting & Performance Tracking System for Modern Organizations
+> Enterprise-grade Goal Setting & Performance Tracking System — AtomQuest Hackathon 1.0
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://atomquest-frontend.vercel.app)
 [![Backend API](https://img.shields.io/badge/API-online-blue)](https://atomquest-backend-33sg.onrender.com)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+**Hackathon judges:** See [docs/SUBMISSION.md](docs/SUBMISSION.md) for deliverables, credentials, and a 3-minute demo path.
+
+> **Note:** Backend on Render free tier may cold-start (~30–60s) after idle time. Open the live site once before judging.
+
 ---
 
 ## 📋 Table of Contents
 - [Overview](#overview)
+- [Project Structure](#project-structure)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Live Demo](#live-demo)
 - [Demo Credentials](#demo-credentials)
-- [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
+- [Testing](#testing)
+- [Documentation](#documentation)
 
 ---
 
@@ -49,8 +53,7 @@ AtomQuest Goal Tracking Portal is a comprehensive performance management system 
 ### For Managers
 - ✅ View and manage team goals
 - ✅ Approve or reject goal submissions
-- ✅ Monitor team performance
-- ✅ Share goals with team members
+- ✅ Monitor team performance (Team Check-ins)
 - ✅ Generate team reports
 - ✅ Track completion rates
 
@@ -70,7 +73,22 @@ AtomQuest Goal Tracking Portal is a comprehensive performance management system 
 - 📈 **Analytics Dashboard** - Real-time performance metrics
 - 🔍 **Audit Trail** - Complete history of all changes
 - 📥 **CSV Export** - Download reports in CSV format
-- 🎨 **Customizable Themes** - Professional UI with Ant Design
+- 🎨 **Premium dark UI** - Modern SaaS design across all roles
+
+---
+
+## 📁 Project Structure
+
+```
+atomquest-hackathon/
+├── frontend/          # React + Vite SPA (Vercel)
+├── backend/           # FastAPI API (Render)
+├── docs/              # Submission, architecture, demo script
+├── tests/             # Additional test suites
+├── scripts/           # Dev utility scripts
+├── test_comprehensive.py   # Main API test (run from repo root)
+└── README.md
+```
 
 ---
 
@@ -139,48 +157,23 @@ Password: password123
 
 ---
 
-## 📸 Screenshots
-
-### Login Page
-![Login](screenshots/login.png)
-
-### Admin Dashboard
-![Admin Dashboard](screenshots/admin-dashboard.png)
-
-### Employee Goals
-![Employee Goals](screenshots/employee-goals.png)
-
-### Manager Team View
-![Manager Team](screenshots/manager-team.png)
-
----
-
 ## 🏗️ Architecture
 
+High-level flow: **Browser → React (Vercel) → FastAPI (Render) → PostgreSQL (Supabase)** with **Resend** (email) and **OpenRouter/OpenAI** (AI suggestions).
+
+Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
+Diagram file (PNG/PDF): add to [docs/architecture/](docs/architecture/) when ready.
+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                     │
-│                    Vercel Deployment                         │
-└────────────────────┬────────────────────────────────────────┘
-                     │ HTTPS/REST API
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                    Backend (FastAPI)                         │
-│                    Render Deployment                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │     Auth     │  │   Business   │  │   Services   │     │
-│  │   Endpoints  │  │    Logic     │  │   (AI/Email) │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-└────────────────────┬────────────────────────────────────────┘
-                     │ SQL
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│              PostgreSQL Database                             │
-│              Supabase Hosting                                │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐      │
-│  │  Users   │ │  Goals   │ │ Check-ins│ │  Audits  │      │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘      │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────┐     HTTPS/JWT      ┌──────────────┐     SQL      ┌──────────────┐
+│ React SPA    │ ────────────────► │ FastAPI      │ ──────────► │ PostgreSQL   │
+│ Vercel       │                   │ Render       │             │ Supabase     │
+└──────────────┘                   └──────┬───────┘             └──────────────┘
+                                          │
+                              ┌───────────┴───────────┐
+                              ▼                       ▼
+                         Resend (email)      OpenRouter (AI)
 ```
 
 ---
@@ -294,25 +287,33 @@ For complete API documentation, visit: [https://atomquest-backend-33sg.onrender.
 
 ## 🧪 Testing
 
-### Run Comprehensive Tests
+### API test (recommended)
 ```bash
+# From repository root — tests live backend
 python test_comprehensive.py
 ```
 
-### Run Quick Tests
+### Other suites
 ```bash
+python tests/test_frontend_deep.py
 python backend/quick_test.py
 ```
 
-### Manual Testing
-1. Log in with each role (Admin, Manager, Employee)
-2. Create a goal as Employee
-3. Submit goal for approval
-4. Approve goal as Manager
-5. Add check-in as Employee
-6. View reports as Manager/Admin
+See [docs/TESTING.md](docs/TESTING.md) and [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md).
 
 ---
+
+## 📚 Documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [docs/SUBMISSION.md](docs/SUBMISSION.md) | Hackathon deliverables |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | Demo walkthrough |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deploy notes |
+
+---
+
 
 ## 📊 Project Statistics
 
@@ -346,7 +347,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👥 Team
 
 **Developer**: Tejasvi Upadhyay  
-**Email**: [your-email@example.com]  
 **GitHub**: [@TejasviUpadhyay1907](https://github.com/TejasviUpadhyay1907)
 
 ---
@@ -364,21 +364,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email [your-email@example.com] or open an issue on GitHub.
+Open an issue on [GitHub](https://github.com/TejasviUpadhyay1907/atomquest-hackathon/issues).
 
 ---
 
-## 🎯 Roadmap
+## 🎯 Roadmap (future)
 
-### Upcoming Features
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics with ML
-- [ ] Integration with Slack/Teams
-- [ ] Multi-language support
-- [ ] Dark mode
-- [ ] Goal templates marketplace
-- [ ] Gamification features
-- [ ] Advanced reporting with charts
+- [ ] Microsoft Entra ID / SSO
+- [ ] Microsoft Teams notifications
+- [ ] Calendar-enforced quarterly windows
+- [ ] Mobile app
 
 ---
 
@@ -392,4 +387,4 @@ If you find this project useful, please consider giving it a star on GitHub!
 
 ---
 
-*Last Updated: May 17, 2026*
+*Last Updated: May 2026*
