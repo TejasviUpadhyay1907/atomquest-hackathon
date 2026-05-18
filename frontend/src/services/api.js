@@ -45,6 +45,7 @@ export const authAPI = {
   login: (credentials) => api.post('/api/auth/login', credentials),
   register: (userData) => api.post('/api/auth/register', userData),
   getCurrentUser: () => api.get('/api/auth/me'),
+  getManagers: () => api.get('/api/auth/managers'),
 };
 
 // Goal APIs

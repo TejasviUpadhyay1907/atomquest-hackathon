@@ -8,6 +8,14 @@ from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
 router = APIRouter()
 
 
+@router.get("/managers")
+def get_managers(db: Session = Depends(get_db)):
+    """Get list of managers for signup dropdown (public endpoint)"""
+    from app.models.user import UserRole
+    managers = db.query(User).filter(User.role == UserRole.MANAGER).all()
+    return [{"id": m.id, "full_name": m.full_name, "department": m.department} for m in managers]
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""

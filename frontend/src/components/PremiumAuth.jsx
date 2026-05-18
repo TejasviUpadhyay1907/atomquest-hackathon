@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { message } from 'antd';
+import { authAPI } from '../services/api';
 
 /* ─────────────────────────────────────────────
    Styled input — plain <input>, no wrappers
@@ -45,7 +46,14 @@ const PremiumAuth = () => {
   const [fullName, setFullName]   = useState('');
   const [role, setRole]           = useState('');
   const [department, setDept]     = useState('');
+  const [managerId, setManagerId] = useState('');
+  const [managers, setManagers]   = useState([]);
   const { login, register } = useAuth();
+
+  // Fetch managers for signup dropdown
+  useEffect(() => {
+    authAPI.getManagers().then(res => setManagers(res.data || [])).catch(() => {});
+  }, []);
 
   /* animated counters */
   const [counts, setCounts] = useState([0, 0, 0, 0]);
@@ -68,7 +76,7 @@ const PremiumAuth = () => {
 
   const switchMode = (next) => {
     setMode(next);
-    setEmail(''); setPassword(''); setFullName(''); setRole(''); setDept('');
+    setEmail(''); setPassword(''); setFullName(''); setRole(''); setDept(''); setManagerId('');
   };
 
   const doLogin = async (em, pw) => {
@@ -91,7 +99,10 @@ const PremiumAuth = () => {
     }
     setLoading(true);
     try {
-      await register({ full_name: fullName, email, password, role, department });
+      await register({ 
+        full_name: fullName, email, password, role, department,
+        manager_id: role === 'Employee' && managerId ? parseInt(managerId) : null
+      });
       message.success('Account created! Please sign in.');
       switchMode('login');
     } catch (err) {
@@ -314,6 +325,25 @@ const PremiumAuth = () => {
                   </div>
                   <Field type="text" placeholder="Department (optional)" value={department}
                     onChange={e => setDept(e.target.value)} icon="🏢" />
+
+                  {/* Manager selector — only for Employee role */}
+                  {role === 'Employee' && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <select value={managerId} onChange={e => setManagerId(e.target.value)}
+                        style={{ width:'100%', height:'50px', boxSizing:'border-box',
+                          background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)',
+                          borderRadius:'12px', color: managerId ? 'white' : 'rgba(255,255,255,0.4)',
+                          fontSize:'15px', padding:'0 16px', outline:'none', cursor:'pointer',
+                          fontFamily:'Inter,sans-serif', appearance:'none' }}>
+                        <option value="" style={{ background:'#111' }}>Select your manager (optional)</option>
+                        {managers.map(m => (
+                          <option key={m.id} value={m.id} style={{ background:'#111', color:'white' }}>
+                            {m.full_name}{m.department ? ` — ${m.department}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <button type="submit" disabled={loading} style={btnPrimary}
                     onMouseEnter={e => { if(!loading){ e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(102,126,234,0.4)'; }}}
                     onMouseLeave={e => { e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
