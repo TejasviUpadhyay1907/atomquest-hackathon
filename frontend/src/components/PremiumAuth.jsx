@@ -75,7 +75,7 @@ const PremiumAuth = () => {
     if (!em || !pw) { message.error('Enter email and password'); return; }
     setLoading(true);
     try {
-      const { user } = await login({ email: em, password: pw });
+      const user = await login({ email: em, password: pw });
       message.success(`Welcome, ${user.full_name}!`);
       window.location.href = '/home';
     } catch (err) {
