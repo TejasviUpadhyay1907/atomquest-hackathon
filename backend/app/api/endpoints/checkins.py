@@ -248,6 +248,15 @@ def get_team_check_ins(
         goal = check_in.goal
         employee = goal.user
         
+        # Convert enum status to display value
+        status_display_map = {
+            'ON_TRACK': 'On Track',
+            'COMPLETED': 'Completed',
+            'NOT_STARTED': 'Not Started',
+        }
+        raw_status = str(check_in.status.value if hasattr(check_in.status, 'value') else check_in.status)
+        display_status = status_display_map.get(raw_status, raw_status)
+        
         result.append({
             "check_in_id": check_in.id,
             "employee_id": employee.id,
@@ -257,7 +266,7 @@ def get_team_check_ins(
             "quarter": check_in.quarter,
             "planned_target": check_in.planned_target,
             "actual_achievement": check_in.actual_achievement,
-            "status": check_in.status,
+            "status": display_status,
             "progress_score": check_in.progress_score,
             "manager_comment": check_in.manager_comment,
             "created_at": check_in.created_at,
