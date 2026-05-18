@@ -107,11 +107,13 @@ const PremiumAuth = () => {
     { icon: '🎯', label: 'Success Rate',    val: `${counts[2]}%`, g: '#667eea,#764ba2' },
     { icon: '⚡', label: 'Productivity',    val: `+${counts[3]}%`, g: '#f59e0b,#d97706' },
   ];
+
+  /* Signup: same box design, feature text instead of numbers */
   const signupWidgets = [
-    { icon: '👥', label: 'Active Users',     val: counts[0], g: '#10b981,#059669' },
-    { icon: '🎯', label: 'Goals Achieved',   val: counts[1], g: '#06b6d4,#3b82f6' },
-    { icon: '📈', label: 'Success Rate',     val: `${counts[2]}%`, g: '#667eea,#764ba2' },
-    { icon: '🏢', label: 'Enterprise Teams', val: counts[3], g: '#f59e0b,#d97706' },
+    { icon: '🎯', label: 'Set & track quarterly goals', val: 'Goal Tracking', g: '#10b981,#059669' },
+    { icon: '✅', label: 'Manager approval workflows', val: 'Approvals', g: '#06b6d4,#3b82f6' },
+    { icon: '🤖', label: 'AI-powered suggestions', val: 'AI Assist', g: '#667eea,#764ba2' },
+    { icon: '📊', label: 'Real-time analytics', val: 'Analytics', g: '#f59e0b,#d97706' },
   ];
   const widgets = mode === 'login' ? loginWidgets : signupWidgets;
 
@@ -208,7 +210,7 @@ const PremiumAuth = () => {
                   <div style={{ width:'40px', height:'40px', borderRadius:'10px', marginBottom:'12px',
                     background:`linear-gradient(135deg,${w.g})`,
                     display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>{w.icon}</div>
-                  <div style={{ color:'white', fontSize:'1.6rem', fontWeight:700, lineHeight:1 }}>{w.val}</div>
+                  <div style={{ color:'white', fontSize: mode === 'signup' ? '1rem' : '1.6rem', fontWeight:700, lineHeight:1.2, marginBottom:'4px' }}>{w.val}</div>
                   <div style={{ color:'rgba(255,255,255,0.5)', fontSize:'12px', marginTop:'4px' }}>{w.label}</div>
                 </motion.div>
               ))}
